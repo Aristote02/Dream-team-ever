@@ -1,0 +1,59 @@
+@host = http://localhost:5292
+
+### Config (anonymous)
+GET {{host}}/api/config/registration
+Accept: application/json
+
+### Register student account
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Jane Student",
+  "email": "jane@example.com",
+  "phone": "+1234567890",
+  "password": "Student123!"
+}
+
+### Login (student or admin)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@dreamteam.test",
+  "password": "Admin123!"
+}
+
+### Current student profile (Bearer token required)
+GET {{host}}/api/students/me
+Authorization: Bearer {{token}}
+
+### Initiate payment — replace ids after login
+POST {{host}}/api/payments/initiate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "studentId": 1,
+  "method": "mpesa"
+}
+
+### Admin: all users
+GET {{host}}/api/admin/users
+Authorization: Bearer {{adminToken}}
+
+### Admin: students with matricule
+GET {{host}}/api/admin/students/with-matricule
+Authorization: Bearer {{adminToken}}
+
+### Admin: all payments
+GET {{host}}/api/admin/payments
+Authorization: Bearer {{adminToken}}
+
+### Admin: delete user
+DELETE {{host}}/api/admin/users/2
+Authorization: Bearer {{adminToken}}
+
+### Verify matricule (anonymous)
+GET {{host}}/api/matricules/verify?code=DTE-2026-XXXXXX
+Accept: application/json
