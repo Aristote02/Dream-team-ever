@@ -1,0 +1,149 @@
+import { apiUrl } from './apiBase'
+
+export type AuthResponseDto = {
+  accessToken: string
+  accessExpiresAtUtc: string
+  refreshToken: string
+  refreshExpiresAtUtc: string
+  email: string
+  role: string
+  userId: string
+  memberId: string | null
+}
+
+export type MemberDto = {
+  id: string
+  userId: string
+  fullName: string
+  email: string
+  phone: string
+  matriculeCode: string | null
+  matriculeIssuedAt: string | null
+  createdAt: string
+}
+
+async function readJson(res: Response): Promise<unknown> {
+  const text = await res.text()
+  if (!text) return null
+  try {
+    return JSON.parse(text) as unknown
+  } catch {
+    return null
+  }
+}
+
+export async function signInRequest(
+  email: string,
+  password: string,
+): Promise<
+  | { ok: true; data: AuthResponseDto }
+  | { ok: false; status: number; message?: string }
+> {
+  const res = await fetch(apiUrl('/api/auth/sign-in'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim(), password }),
+  })
+
+  if (res.ok) {
+    const data = (await readJson(res)) as AuthResponseDto
+    return { ok: true, data }
+  }
+
+  if (res.status === 401) {
+    return { ok: false, status: 401 }
+  }
+
+  const body = (await readJson(res)) as { error?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message: typeof body?.error === 'string' ? body.error : undefined,
+  }
+}
+
+export async function signUpRequest(
+  fullName: string,
+  email: string,
+  phone: string,
+  password: string,
+): Promise<
+  | { ok: true; data: AuthResponseDto }
+  | { ok: false; status: number; message?: string }
+> {
+  const res = await fetch(apiUrl('/api/auth/sign-up'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fullName: fullName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      password,
+    }),
+  })
+
+  if (res.ok) {
+    const data = (await readJson(res)) as AuthResponseDto
+    return { ok: true, data }
+  }
+
+  if (res.status === 409) {
+    return { ok: false, status: 409 }
+  }
+
+  const body = (await readJson(res)) as { error?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message: typeof body?.error === 'string' ? body.error : undefined,
+  }
+}
+
+export async function refreshTokensRequest(
+  refreshToken: string,
+): Promise<
+  | { ok: true; data: AuthResponseDto }
+  | { ok: false; status: number }
+> {
+  const res = await fetch(apiUrl('/api/auth/refresh'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  })
+
+  if (!res.ok) {
+    return { ok: false, status: res.status }
+  }
+
+  const data = (await readJson(res)) as AuthResponseDto
+  return { ok: true, data }
+}
+
+export async function fetchCurrentMember(
+  accessToken: string,
+): Promise<{ ok: true; data: MemberDto } | { ok: false; status: number }> {
+  const res = await fetch(apiUrl('/api/members/me'), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+
+  if (!res.ok) {
+    return { ok: false, status: res.status }
+  }
+
+  const data = (await readJson(res)) as MemberDto
+  return { ok: true, data }
+}
+
+export async function signOutRequest(accessToken: string): Promise<boolean> {
+  const res = await fetch(apiUrl('/api/auth/sign-out'), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+  return res.ok || res.status === 204
+}
