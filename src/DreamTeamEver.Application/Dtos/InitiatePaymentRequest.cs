@@ -4,7 +4,6 @@ using DreamTeamEver.Domain.Enums;
 namespace DreamTeamEver.Application.Dtos;
 
 public record InitiatePaymentRequest(
-    [property: Range(1, int.MaxValue)]
-    int StudentId,
+    Guid MemberId,
     [property: Required]
     PaymentMethod Method);
