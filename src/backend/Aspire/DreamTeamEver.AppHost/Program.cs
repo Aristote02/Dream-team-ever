@@ -44,10 +44,8 @@ var dreamTeamEverApi = builder.AddProject<Projects.DreamTeamEver_Api>("dream-tea
         endpoint.UriScheme = "https";
     });
 
-// TODO: Add Frontend
-// builder.AddNpmApp("dreamTeamEver-web", "../../../frontend/DreamTeamEver.Web")
-//    .WithReference(dreamTeamEverApi)
-//    .WithHttpEndpoint(port: , targetPort: , name: "frontend", env: "PORT");
-//.PublishAsDockerFile();
+ builder.AddNpmApp("dreamTeamEver-web", "../../../frontend/DreamTeamEver.Web")
+    .WithReference(dreamTeamEverApi)
+    .WithHttpEndpoint(port: 40002, targetPort: 4000, name: "frontend", env: "PORT");
 
 builder.Build().Run();
