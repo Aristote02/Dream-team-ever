@@ -1,0 +1,76 @@
+services:
+  dream-team.api:
+    image: ${DOCKER_REGISTRY-}dreamteamapi
+    build:
+      context: .
+      dockerfile: src/DreamTeamEver.Api/Dockerfile
+    ports:
+      - "3600:8080"
+    networks:
+      - dream-team-network
+    env_file:
+      - .env
+    environment:
+      - ConnectionStrings__DreamTeamEverDbConnectionString=Host=postgres;Port=5432;Database=DreamTeamEver;Username=postgres;Password=R331yStrongP@ssw0rd!
+      - ConnectionStrings__RedisConnectionString=redis:6379,abortConnect=false
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=R331yStrongP@ssw0rd!
+      - POSTGRES_DB=DreamTeamEver
+    ports:
+      - "5600:5432"
+    restart: always
+    networks:
+      - dream-team-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - dream-team-network
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 80mb
+      --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 100M
+        reservations:
+          cpus: '0.10'
+          memory: 64M
+
+  frontend:
+    profiles:
+      - frontend
+    build:
+      context: ./src/frontend/DreamTeamEver.Web
+      dockerfile: Dockerfile
+    ports:
+      - "4203:80"
+    networks:
+      - dream-team-network
+    depends_on:
+      - dream-team.api
+
+networks:
+  dream-team-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

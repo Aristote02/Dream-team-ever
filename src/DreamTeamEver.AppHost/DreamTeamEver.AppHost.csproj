@@ -1,0 +1,21 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.2.4">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>9f99a3b5-9a15-41d1-96d0-f84e9bc2f7e6</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DreamTeamEver.Api\DreamTeamEver.Api.csproj" />
+      <ProjectReference Include="..\DreamTeamEver.MigrationService\DreamTeamEver.MigrationService.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Aspire.Hosting.NodeJs" />
+      <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    </ItemGroup>
+
+</Project>

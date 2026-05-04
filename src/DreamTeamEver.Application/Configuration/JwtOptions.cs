@@ -12,4 +12,7 @@ public class JwtOptions
     public string Key { get; set; } = string.Empty;
 
     public int AccessTokenMinutes { get; set; } = 60;
+
+    /// <summary>Lifetime for opaque refresh tokens stored in the database.</summary>
+    public int RefreshTokenDays { get; set; } = 7;
 }

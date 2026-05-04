@@ -1,0 +1,43 @@
+root = true
+
+[*]
+indent_style = space
+end_of_line = lf
+charset = utf-8
+insert_final_newline = true
+max_line_length = 180
+
+# ReSharper properties
+resharper_csharp_max_line_length = 180
+
+[*.xml]
+indent_size = 4
+
+[*.cs]
+indent_size = 4
+dotnet_sort_system_directives_first = true
+dotnet_style_namespace_match_folder = true
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = true:warning
+# Simplify name
+dotnet_diagnostic.ide0001.severity = error
+# Simplify member access
+dotnet_diagnostic.ide0002.severity = error
+# Remove unnecessary cast
+dotnet_diagnostic.ide0004.severity = error
+# Remove unused usings
+dotnet_diagnostic.ide0005.severity = error
+# Remove unused private member
+dotnet_diagnostic.ide0051.severity = error
+# Remove unread private member
+dotnet_diagnostic.ide0052.severity = error
+# Remove unnecessary suppression
+dotnet_diagnostic.ide0079.severity = error
+# Remove unnecessary equality operator
+dotnet_diagnostic.ide0100.severity = error
+# Disable use primary constructor
+dotnet_diagnostic.ide0290.severity = none
+
+[*.json]
+indent_size = 2
+insert_final_newline = false
