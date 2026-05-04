@@ -14,14 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\DreamTeamEver.Domain\DreamTeamEver.Domain.csproj" />
-      <ProjectReference Include="..\DreamTeamEver.ServiceDefaults\DreamTeamEver.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\..\backend\Aspire\DreamTeamEver.ServiceDefaults\DreamTeamEver.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\..\backend\Services\DreamTeamEver\DreamTeamEver.Domain\DreamTeamEver.Domain.csproj" />
     </ItemGroup>
 
 </Project>

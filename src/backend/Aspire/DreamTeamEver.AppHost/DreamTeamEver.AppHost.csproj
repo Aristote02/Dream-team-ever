@@ -9,13 +9,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DreamTeamEver.Api\DreamTeamEver.Api.csproj" />
-      <ProjectReference Include="..\DreamTeamEver.MigrationService\DreamTeamEver.MigrationService.csproj" />
+      <ProjectReference Include="..\..\..\frontend\DreamTeamEver.Web\DreamTeamEver.Web.csproj" />
+      <ProjectReference Include="..\..\Services\DreamTeamEver\DreamTeamEver.Api\DreamTeamEver.Api.csproj" />
+      <ProjectReference Include="..\..\Services\Migrators\DreamTeamEver.MigrationService\DreamTeamEver.MigrationService.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Aspire.Hosting.NodeJs" />
       <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+      <PackageReference Include="Aspire.Hosting.Redis" />
     </ItemGroup>
 
 </Project>

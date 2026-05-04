@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Mapster" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Aspire\DreamTeamEver.ServiceDefaults\DreamTeamEver.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\..\DreamTeamEver\DreamTeamEver.Api\DreamTeamEver.Api.csproj" />
+        <ProjectReference Include="..\..\DreamTeamEver\DreamTeamEver.Application\DreamTeamEver.Application.csproj" />
+        <ProjectReference Include="..\..\DreamTeamEver\DreamTeamEver.Domain\DreamTeamEver.Domain.csproj" />
+        <ProjectReference Include="..\..\DreamTeamEver\DreamTeamEver.Infrastructure\DreamTeamEver.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -5,9 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <!-- Satellite assemblies from *.culture.resx without legacy .NET Framework al.exe (fixes MSB3086 when WinSDK/NETFX SDK tools are missing). -->
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="LinqKit.Core" />
     <PackageReference Include="Mapster" />
     <PackageReference Include="FastEndpoints" />
     <PackageReference Include="FastEndpoints.Swagger" />
@@ -21,16 +24,10 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DreamTeamEver.Application\DreamTeamEver.Application.csproj" />
-    <ProjectReference Include="..\DreamTeamEver.Infrastructure\DreamTeamEver.Infrastructure.csproj" />
-    <ProjectReference Include="..\DreamTeamEver.ServiceDefaults\DreamTeamEver.ServiceDefaults.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\..\.dockerignore">
-      <Link>.dockerignore</Link>
-    </Content>
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\DreamTeamEver.Application\DreamTeamEver.Application.csproj"/>
+        <ProjectReference Include="..\DreamTeamEver.Infrastructure\DreamTeamEver.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\..\Aspire\DreamTeamEver.ServiceDefaults\DreamTeamEver.ServiceDefaults.csproj"/>
+    </ItemGroup>
 
 </Project>

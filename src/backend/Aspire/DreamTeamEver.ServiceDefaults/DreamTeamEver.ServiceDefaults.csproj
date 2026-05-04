@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DreamTeamEver.Domain\DreamTeamEver.Domain.csproj" />
+        <ProjectReference Include="..\..\Services\DreamTeamEver\DreamTeamEver.Domain\DreamTeamEver.Domain.csproj" />
     </ItemGroup>
 
 </Project>

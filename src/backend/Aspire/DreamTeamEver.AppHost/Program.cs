@@ -17,6 +17,11 @@ var dreamTeamEverDb = builder
     .WithLifetime(ContainerLifetime.Persistent)
     .AddDatabase("DreamTeamEverDbConnectionString", "DreamTeamEver");
 
+// Add Redis cache
+var redis = builder
+    .AddRedis("RedisConnectionString")
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
 
 // Add migration service for project database
 var projectDbMigrator = builder.AddProject<Projects.DreamTeamEver_MigrationService>("dream-team-ever-migrator")
@@ -26,6 +31,7 @@ var projectDbMigrator = builder.AddProject<Projects.DreamTeamEver_MigrationServi
 // Add API (wait for migrator so schema exists — avoids API startup deadlocks / racing Migrate)
 var dreamTeamEverApi = builder.AddProject<Projects.DreamTeamEver_Api>("dream-team-ever-api")
     .WithReference(dreamTeamEverDb)
+    .WithReference(redis)
     .WaitFor(projectDbMigrator)
     .WithEndpoint("http", endpoint =>
     {
