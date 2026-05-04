@@ -4,11 +4,11 @@ namespace DreamTeamEver.Domain.Entities;
 
 public class PaymentTransaction
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
-    public int StudentId { get; set; }
+    public Guid MemberId { get; set; }
 
-    public Student Student { get; set; } = null!;
+    public Member Member { get; set; } = null!;
 
     public PaymentMethod Method { get; set; }
 

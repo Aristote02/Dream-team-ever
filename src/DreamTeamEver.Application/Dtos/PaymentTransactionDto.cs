@@ -3,8 +3,8 @@ using DreamTeamEver.Domain.Enums;
 namespace DreamTeamEver.Application.Dtos;
 
 public record PaymentTransactionDto(
-    int Id,
-    int StudentId,
+    Guid Id,
+    Guid MemberId,
     PaymentMethod Method,
     decimal Amount,
     string Currency,

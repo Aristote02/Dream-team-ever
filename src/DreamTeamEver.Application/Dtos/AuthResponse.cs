@@ -2,8 +2,10 @@ namespace DreamTeamEver.Application.Dtos;
 
 public record AuthResponse(
     string AccessToken,
-    DateTimeOffset ExpiresAtUtc,
+    DateTimeOffset AccessExpiresAtUtc,
+    string RefreshToken,
+    DateTimeOffset RefreshExpiresAtUtc,
     string Email,
     string Role,
-    int UserId,
-    int? StudentId);
+    Guid UserId,
+    Guid? MemberId);
