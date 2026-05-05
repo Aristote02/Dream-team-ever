@@ -27,4 +27,10 @@ public sealed class PaymentTransactionRepository : Repository<PaymentTransaction
         Query().AsNoTracking()
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
+
+    public Task<List<PaymentTransaction>> ListByUserCreatedDescAsync(Guid userId, CancellationToken cancellationToken) =>
+        Query().AsNoTracking()
+            .Where(p => p.Member.UserId == userId)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync(cancellationToken);
 }

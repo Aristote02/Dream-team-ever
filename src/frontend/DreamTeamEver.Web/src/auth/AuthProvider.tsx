@@ -26,6 +26,14 @@ type PersistedSession = {
   user: AuthUser
 }
 
+type MemberSnapshot = {
+  displayName: string
+  phone: string | null
+  matriculeCode: string | null
+  matriculeIssuedAt: string | null
+  createdAt: string | null
+}
+
 function mapApiRole(role: string): UserRole {
   return role === 'Admin' ? 'admin' : 'student'
 }
@@ -35,30 +43,52 @@ function defaultDisplayName(email: string, isAdminUser: boolean): string {
   return email.split('@')[0] ?? email
 }
 
-async function resolveDisplayName(
+async function resolveMemberSnapshot(
   auth: AuthResponseDto,
   accessToken: string,
   signupFullName?: string,
-): Promise<string> {
+): Promise<MemberSnapshot> {
   const trimmed = signupFullName?.trim()
-  if (trimmed) return trimmed
-
   if (auth.role === 'Admin') {
-    return defaultDisplayName(auth.email, true)
+    return {
+      displayName: defaultDisplayName(auth.email, true),
+      phone: null,
+      matriculeCode: null,
+      matriculeIssuedAt: null,
+      createdAt: null,
+    }
   }
 
   const me = await fetchCurrentMember(accessToken)
-  if (me.ok) return me.data.fullName
+  if (me.ok) {
+    return {
+      displayName: trimmed || me.data.fullName,
+      phone: me.data.phone,
+      matriculeCode: me.data.matriculeCode,
+      matriculeIssuedAt: me.data.matriculeIssuedAt,
+      createdAt: me.data.createdAt,
+    }
+  }
 
-  return defaultDisplayName(auth.email, false)
+  return {
+    displayName: trimmed || defaultDisplayName(auth.email, false),
+    phone: auth.phone ?? null,
+    matriculeCode: auth.matriculeCode ?? null,
+    matriculeIssuedAt: null,
+    createdAt: null,
+  }
 }
 
-function buildUser(auth: AuthResponseDto, displayName: string): AuthUser {
+function buildUser(auth: AuthResponseDto, member: MemberSnapshot): AuthUser {
   return {
     id: auth.userId,
     email: auth.email,
-    displayName,
+    displayName: member.displayName,
     role: mapApiRole(auth.role),
+    phone: member.phone,
+    matriculeCode: member.matriculeCode,
+    matriculeIssuedAt: member.matriculeIssuedAt,
+    createdAt: member.createdAt,
   }
 }
 
@@ -76,6 +106,12 @@ function readSession(): PersistedSession | null {
       typeof data.user.id !== 'string' ||
       typeof data.user.email !== 'string' ||
       typeof data.user.displayName !== 'string' ||
+      (data.user.phone !== null && typeof data.user.phone !== 'string') ||
+      (data.user.matriculeCode !== null &&
+        typeof data.user.matriculeCode !== 'string') ||
+      (data.user.matriculeIssuedAt !== null &&
+        typeof data.user.matriculeIssuedAt !== 'string') ||
+      (data.user.createdAt !== null && typeof data.user.createdAt !== 'string') ||
       (data.user.role !== 'admin' && data.user.role !== 'student')
     ) {
       return null
@@ -111,12 +147,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       auth: AuthResponseDto,
       options?: { signupFullName?: string },
     ): Promise<void> => {
-      const displayName = await resolveDisplayName(
+      const member = await resolveMemberSnapshot(
         auth,
         auth.accessToken,
         options?.signupFullName,
       )
-      const nextUser = buildUser(auth, displayName)
+      const nextUser = buildUser(auth, member)
       const session: PersistedSession = {
         accessToken: auth.accessToken,
         refreshToken: auth.refreshToken,
@@ -223,6 +259,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const getAccessToken = useCallback(async (): Promise<string | null> => {
+    const session = readSession()
+    if (!session) return null
+
+    if (accessValid(session)) return session.accessToken
+
+    if (!refreshValid(session)) {
+      localStorage.removeItem(STORAGE_KEY)
+      setUser(null)
+      return null
+    }
+
+    const refreshed = await refreshTokensRequest(session.refreshToken)
+    if (!refreshed.ok) {
+      localStorage.removeItem(STORAGE_KEY)
+      setUser(null)
+      return null
+    }
+
+    await applyAuthResponse(refreshed.data)
+    return refreshed.data.accessToken
+  }, [applyAuthResponse])
+
   const refreshSession = useCallback(async () => {
     const session = readSession()
     if (!session) {
@@ -230,7 +289,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    let token = session.accessToken
     if (!accessValid(session)) {
       if (!refreshValid(session)) {
         localStorage.removeItem(STORAGE_KEY)
@@ -249,13 +307,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (session.user.role === 'admin') return
 
-    const me = await fetchCurrentMember(token)
+    const me = await fetchCurrentMember(session.accessToken)
     if (!me.ok) return
-    if (me.data.fullName === session.user.displayName) return
+    if (
+      me.data.fullName === session.user.displayName &&
+      me.data.phone === session.user.phone &&
+      me.data.matriculeCode === session.user.matriculeCode &&
+      me.data.matriculeIssuedAt === session.user.matriculeIssuedAt &&
+      me.data.createdAt === session.user.createdAt
+    ) {
+      return
+    }
 
     const nextUser: AuthUser = {
       ...session.user,
       displayName: me.data.fullName,
+      phone: me.data.phone,
+      matriculeCode: me.data.matriculeCode,
+      matriculeIssuedAt: me.data.matriculeIssuedAt,
+      createdAt: me.data.createdAt,
     }
     const next: PersistedSession = { ...session, user: nextUser }
     persistSession(next)
@@ -271,10 +341,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      getAccessToken,
       refreshSession,
       isAdmin,
     }),
-    [user, authReady, login, register, logout, refreshSession, isAdmin],
+    [
+      user,
+      authReady,
+      login,
+      register,
+      logout,
+      getAccessToken,
+      refreshSession,
+      isAdmin,
+    ],
   )
 
   return (

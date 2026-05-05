@@ -10,6 +10,8 @@ public interface IMemberRepository : IRepository<Member>
 
     Task<Member?> GetTrackedByIdAsync(Guid memberId, CancellationToken cancellationToken = default);
 
+    Task<Member?> GetTrackedByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
     Task<bool> MatriculeCodeExistsAsync(string matriculeCode, CancellationToken cancellationToken = default);
 
     Task<Member?> FindByMatriculeCodeAsync(string normalizedCode, CancellationToken cancellationToken = default);

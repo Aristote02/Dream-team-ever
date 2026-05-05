@@ -22,7 +22,7 @@ export function AuthScreenLayout({ subtitle, children }: AuthScreenLayoutProps) 
               alt="The Dream Team Ever"
               className="h-20 w-auto max-w-full object-contain sm:h-40"
             />
-            <h1 className="font-dream-serif mt-3 text-[1.75rem] font-semibold tracking-tight text-stone-900 dark:text-stone-100 sm:mt-6 sm:text-[1.65rem]">
+            <h1 className="font-dream-serif mt-3 max-w-full text-balance text-[clamp(1.55rem,8vw,2.1rem)] font-semibold leading-[1.05] tracking-tight text-stone-900 dark:text-stone-100 sm:mt-6 sm:text-[2.1rem]">
               The Dream Team Ever
             </h1>
             <p className="mt-1 max-w-sm text-xs leading-relaxed text-stone-500 dark:text-stone-400 sm:mt-2 sm:text-sm">
