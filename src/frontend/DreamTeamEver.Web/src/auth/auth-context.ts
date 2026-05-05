@@ -6,6 +6,10 @@ export type AuthUser = {
   email: string
   displayName: string
   role: UserRole
+  phone: string | null
+  matriculeCode: string | null
+  matriculeIssuedAt: string | null
+  createdAt: string | null
 }
 
 export type AuthContextValue = {
@@ -23,6 +27,7 @@ export type AuthContextValue = {
     password: string,
   ) => Promise<'ok' | 'email-taken' | 'invalid' | 'error'>
   logout: () => Promise<void>
+  getAccessToken: () => Promise<string | null>
   /** Re-sync profile from the API (member display name) or refresh expired tokens. */
   refreshSession: () => Promise<void>
   isAdmin: boolean

@@ -9,4 +9,6 @@ public interface IPaymentTransactionRepository : IRepository<PaymentTransaction>
     Task<PaymentTransaction?> GetByIdWithMemberAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<List<PaymentTransaction>> GetAllCreatedDescAsync(CancellationToken cancellationToken = default);
+
+    Task<List<PaymentTransaction>> ListByMemberCreatedDescAsync(Guid memberId, CancellationToken cancellationToken = default);
 }

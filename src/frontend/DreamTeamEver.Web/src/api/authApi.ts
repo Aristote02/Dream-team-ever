@@ -9,6 +9,8 @@ export type AuthResponseDto = {
   role: string
   userId: string
   memberId: string | null
+  phone?: string | null
+  matriculeCode?: string | null
 }
 
 export type MemberDto = {
@@ -20,6 +22,19 @@ export type MemberDto = {
   matriculeCode: string | null
   matriculeIssuedAt: string | null
   createdAt: string
+}
+
+export type PaymentTransactionDto = {
+  id: string
+  memberId: string
+  method: string
+  amount: number
+  currency: string
+  status: string
+  providerReference: string | null
+  createdAt: string
+  completedAt: string | null
+  failureReason: string | null
 }
 
 async function readJson(res: Response): Promise<unknown> {
@@ -137,6 +152,45 @@ export async function fetchCurrentMember(
   return { ok: true, data }
 }
 
+export async function updateMyProfileRequest(
+  accessToken: string,
+  fullName: string,
+  phone: string,
+): Promise<
+  | { ok: true; data: MemberDto }
+  | { ok: false; status: number; message?: string }
+> {
+  const res = await fetch(apiUrl('/api/members/me'), {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+    }),
+  })
+
+  if (res.ok) {
+    const data = (await readJson(res)) as MemberDto
+    return { ok: true, data }
+  }
+
+  const body = (await readJson(res)) as { error?: string; message?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message:
+      typeof body?.message === 'string'
+        ? body.message
+        : typeof body?.error === 'string'
+          ? body.error
+          : undefined,
+  }
+}
+
 export async function signOutRequest(accessToken: string): Promise<boolean> {
   const res = await fetch(apiUrl('/api/auth/sign-out'), {
     method: 'POST',
@@ -146,4 +200,25 @@ export async function signOutRequest(accessToken: string): Promise<boolean> {
     },
   })
   return res.ok || res.status === 204
+}
+
+export async function fetchMyPayments(
+  accessToken: string,
+): Promise<
+  | { ok: true; data: PaymentTransactionDto[] }
+  | { ok: false; status: number }
+> {
+  const res = await fetch(apiUrl('/api/members/me/payments'), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+
+  if (!res.ok) {
+    return { ok: false, status: res.status }
+  }
+
+  const data = (await readJson(res)) as PaymentTransactionDto[]
+  return { ok: true, data }
 }

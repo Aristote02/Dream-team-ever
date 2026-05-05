@@ -11,4 +11,6 @@ public interface IPaymentService
     Task<PaymentTransaction?> GetTransactionAsync(Guid transactionId, CancellationToken cancellationToken = default);
 
     Task<PaymentResult> ConfirmAsync(Guid transactionId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PaymentTransaction>> ListTransactionsByMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
 }
