@@ -5,10 +5,10 @@ import { CheckoutPage } from "./pages/CheckoutPage";
 import { HistoricsPage } from "./pages/HistoricsPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
+import { ManageUsersPage } from "./pages/ManageUsersPage";
 import { PaymentCancelPage } from "./pages/PaymentCancelPage";
 import { PaymentSuccessPage } from "./pages/PaymentSuccessPage";
 import { RegisterPage } from "./pages/RegisterPage";
-import { StudentsPage } from "./pages/StudentsPage";
 import { ViewPage } from "./pages/ViewPage";
 
 export default function App() {
@@ -24,7 +24,7 @@ export default function App() {
           path="students"
           element={
             <RequireAdmin>
-              <StudentsPage />
+              <ManageUsersPage />
             </RequireAdmin>
           }
         />

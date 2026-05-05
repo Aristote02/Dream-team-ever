@@ -13,8 +13,7 @@ import {
   signUpRequest,
   type AuthResponseDto,
 } from '../api/authApi'
-import { AuthContext, type AuthUser } from './auth-context'
-import type { UserRole } from './userDirectory'
+import { AuthContext, type AuthUser, type UserRole } from './auth-context'
 
 const STORAGE_KEY = 'dreamteam-auth'
 

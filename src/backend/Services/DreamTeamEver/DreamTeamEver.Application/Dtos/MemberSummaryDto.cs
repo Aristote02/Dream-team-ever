@@ -1,3 +1,5 @@
+using DreamTeamEver.Domain.Enums;
+
 namespace DreamTeamEver.Application.Dtos;
 
 public record MemberSummaryDto(
@@ -6,6 +8,7 @@ public record MemberSummaryDto(
     string FullName,
     string Email,
     string Phone,
+    UserRole Role,
     string? MatriculeCode,
     DateTimeOffset? MatriculeIssuedAt,
     DateTimeOffset CreatedAt);
