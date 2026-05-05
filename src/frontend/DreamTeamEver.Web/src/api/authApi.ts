@@ -37,6 +37,18 @@ export type PaymentTransactionDto = {
   failureReason: string | null
 }
 
+export type AdminMemberSummaryDto = {
+  memberId: string
+  userId: string
+  fullName: string
+  email: string
+  phone: string
+  role: 'Admin' | 'Member'
+  matriculeCode: string | null
+  matriculeIssuedAt: string | null
+  createdAt: string
+}
+
 async function readJson(res: Response): Promise<unknown> {
   const text = await res.text()
   if (!text) return null
@@ -221,4 +233,62 @@ export async function fetchMyPayments(
 
   const data = (await readJson(res)) as PaymentTransactionDto[]
   return { ok: true, data }
+}
+
+export async function fetchAdminMembers(
+  accessToken: string,
+): Promise<
+  | { ok: true; data: AdminMemberSummaryDto[] }
+  | { ok: false; status: number; message?: string }
+> {
+  const res = await fetch(apiUrl('/api/admin/members'), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+
+  if (res.ok) {
+    const data = (await readJson(res)) as AdminMemberSummaryDto[]
+    return { ok: true, data }
+  }
+
+  const body = (await readJson(res)) as { error?: string; message?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message:
+      typeof body?.message === 'string'
+        ? body.message
+        : typeof body?.error === 'string'
+          ? body.error
+          : undefined,
+  }
+}
+
+export async function deleteAdminUser(
+  accessToken: string,
+  userId: string,
+): Promise<{ ok: true } | { ok: false; status: number; message?: string }> {
+  const res = await fetch(apiUrl(`/api/admin/users/${userId}`), {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+
+  if (res.ok) return { ok: true }
+
+  const body = (await readJson(res)) as { error?: string; message?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message:
+      typeof body?.message === 'string'
+        ? body.message
+        : typeof body?.error === 'string'
+          ? body.error
+          : undefined,
+  }
 }

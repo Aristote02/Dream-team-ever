@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { apiFetch, ApiError } from '../api/client'
 import type { CreateCheckoutPayload, CreateCheckoutResult } from '../types/payment'
 import './Pages.css'
@@ -107,6 +108,15 @@ export function CheckoutPage() {
           {loading ? 'Starting payment…' : 'Pay'}
         </button>
       </form>
+
+      <p className="mt-8 text-center text-sm text-stone-500">
+        <Link
+          to="/home"
+          className="font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-300"
+        >
+          Back to wallet
+        </Link>
+      </p>
     </div>
   )
 }

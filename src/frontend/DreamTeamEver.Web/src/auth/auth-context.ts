@@ -1,5 +1,6 @@
 import { createContext } from 'react'
-import type { UserRole } from './userDirectory'
+
+export type UserRole = 'admin' | 'student'
 
 export type AuthUser = {
   id: string

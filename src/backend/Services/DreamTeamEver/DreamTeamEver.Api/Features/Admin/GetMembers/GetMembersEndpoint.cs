@@ -13,7 +13,6 @@ public sealed class GetMembersEndpoint : EndpointWithoutRequest<List<MemberSumma
     public override void Configure()
     {
         Get("/api/admin/members");
-        Roles("Admin");
     }
 
     public override async Task HandleAsync(CancellationToken ct)
