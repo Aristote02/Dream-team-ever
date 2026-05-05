@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-dream-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
@@ -24,7 +25,7 @@
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -61,8 +62,12 @@ html {
   color-scheme: light;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 #root {
-  /* Match wallet/auth white shell even when OS prefers dark mode */
+  /* Default shell theme variables (light). */
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -83,9 +88,23 @@ html {
   color: var(--text);
 }
 
+html.dark #root {
+  --text: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #000000;
+  --border: #171717;
+  --code-bg: #1f2028;
+  --accent: #c084fc;
+  --social-bg: rgba(47, 48, 58, 0.5);
+}
+
 body {
   margin: 0;
   background: #fff;
+}
+
+html.dark body {
+  background: #000000;
 }
 
 h1,

@@ -12,7 +12,7 @@
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
   gap: 16px;
-  background: #fff;
+  background: var(--bg);
   color: var(--text-h);
 }
 
@@ -29,7 +29,12 @@
 
 .app-nav {
   display: flex;
+  align-items: center;
   gap: 20px;
+}
+
+.app-theme-toggle {
+  margin-right: 4px;
 }
 
 .app-nav a {
