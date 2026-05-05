@@ -9,12 +9,10 @@ namespace DreamTeamEver.Api.Features.Members.GetMyPayments;
 public sealed class GetMyPaymentsEndpoint : EndpointWithoutRequest<List<PaymentTransactionDto>>
 {
     private readonly IPaymentService _payments;
-    private readonly IMemberService _members;
 
-    public GetMyPaymentsEndpoint(IPaymentService payments, IMemberService members)
+    public GetMyPaymentsEndpoint(IPaymentService payments)
     {
         _payments = payments;
-        _members = members;
     }
 
     public override void Configure()
@@ -25,14 +23,7 @@ public sealed class GetMyPaymentsEndpoint : EndpointWithoutRequest<List<PaymentT
     public override async Task HandleAsync(CancellationToken ct)
     {
         var userId = User.GetUserId();
-        var me = await _members.GetByUserIdAsync(userId, ct);
-        if (me is null)
-        {
-            await Send.ForbiddenAsync();
-            return;
-        }
-
-        var rows = await _payments.ListTransactionsByMemberAsync(me.Id, ct);
+        var rows = await _payments.ListTransactionsByUserAsync(userId, ct);
         await Send.OkAsync([.. rows.Select(x => x.ToPaymentDto())], ct);
     }
 }

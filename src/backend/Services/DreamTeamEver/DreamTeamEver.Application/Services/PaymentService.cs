@@ -58,8 +58,8 @@ public sealed class PaymentService : IPaymentService
     public Task<PaymentTransaction?> GetTransactionAsync(Guid transactionId, CancellationToken cancellationToken = default) =>
         _payments.GetByIdWithMemberAsync(transactionId, cancellationToken);
 
-    public async Task<IReadOnlyList<PaymentTransaction>> ListTransactionsByMemberAsync(Guid memberId, CancellationToken cancellationToken = default) =>
-        await _payments.ListByMemberCreatedDescAsync(memberId, cancellationToken);
+
+    public async Task<IReadOnlyList<PaymentTransaction>> ListTransactionsByUserAsync(Guid userId, CancellationToken cancellationToken = default) => await _payments.ListByUserCreatedDescAsync(userId, cancellationToken);
 
     public async Task<PaymentResult> ConfirmAsync(Guid transactionId, CancellationToken cancellationToken = default)
     {
