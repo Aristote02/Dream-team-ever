@@ -22,10 +22,7 @@ public sealed class UpdateMeEndpoint : Endpoint<UpdateMyProfileRequest, MemberDt
         var userId = User.GetUserId();
         var member = await _members.UpdateMyProfileAsync(userId, req.FullName, req.Phone, ct);
         if (member is null)
-        {
-            await Send.NotFoundAsync();
             return;
-        }
 
         await Send.OkAsync(member.ToMemberDto(), ct);
     }
