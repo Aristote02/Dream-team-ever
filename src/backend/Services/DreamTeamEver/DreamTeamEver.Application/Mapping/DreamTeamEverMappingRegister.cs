@@ -17,7 +17,8 @@ public sealed class DreamTeamEverMappingRegister : IRegister
 
         config.NewConfig<Member, MemberSummaryDto>()
             .Map(dest => dest.MemberId, src => src.Id)
-            .Map(dest => dest.Email, src => src.User.Email);
+            .Map(dest => dest.Email, src => src.User.Email)
+            .Map(dest => dest.Role, src => src.User.Role);
 
         config.NewConfig<Member, MemberDto>()
             .Map(dest => dest.Email, src => src.User.Email);

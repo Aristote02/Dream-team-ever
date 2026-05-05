@@ -4,6 +4,53 @@ import { authInputClassName } from '../components/authInputClass'
 import { AuthScreenLayout } from '../components/AuthScreenLayout'
 import { useAuth } from '../auth/useAuth'
 
+type RegisterValues = {
+  displayName: string
+  email: string
+  phone: string
+  password: string
+  confirm: string
+}
+
+type RegisterFieldErrors = Partial<Record<keyof RegisterValues, string>>
+
+function validateRegister(values: RegisterValues): RegisterFieldErrors {
+  const errors: RegisterFieldErrors = {}
+  const name = values.displayName.trim()
+  const mail = values.email.trim()
+  const tel = values.phone.trim()
+
+  if (name.length < 2 || name.length > 200) {
+    errors.displayName = 'Full name must be between 2 and 200 characters.'
+  }
+
+  if (!mail) {
+    errors.email = 'Email is required.'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+    errors.email = 'Please enter a valid email address.'
+  }
+
+  if (!tel) {
+    errors.phone = 'Phone number is required.'
+  } else if (tel.length < 6 || tel.length > 32) {
+    errors.phone = 'Phone must be between 6 and 32 characters.'
+  }
+
+  if (!values.password) {
+    errors.password = 'Password is required.'
+  } else if (values.password.length < 6) {
+    errors.password = 'Password must be at least 6 characters.'
+  }
+
+  if (!values.confirm) {
+    errors.confirm = 'Please confirm your password.'
+  } else if (values.password !== values.confirm) {
+    errors.confirm = 'Passwords do not match.'
+  }
+
+  return errors
+}
+
 export function RegisterPage() {
   const navigate = useNavigate()
   const { user, register, authReady } = useAuth()
@@ -12,6 +59,7 @@ export function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({})
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -22,19 +70,10 @@ export function RegisterPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
-
-    if (password !== confirm) {
-      setError('Passwords do not match.')
-      return
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
-      return
-    }
-
-    if (phone.trim().length < 6 || phone.trim().length > 32) {
-      setError('Phone must be between 6 and 32 characters.')
+    const values: RegisterValues = { displayName, email, phone, password, confirm }
+    const nextErrors = validateRegister(values)
+    setFieldErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) {
       return
     }
 
@@ -79,11 +118,19 @@ export function RegisterPage() {
             type="text"
             autoComplete="name"
             value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
+            onChange={(e) => {
+              setDisplayName(e.target.value)
+              if (fieldErrors.displayName) {
+                setFieldErrors(prev => ({ ...prev, displayName: undefined }))
+              }
+            }}
             className={authInputClassName}
             placeholder="Your name"
             required
           />
+          {fieldErrors.displayName ? (
+            <p className="mt-1 text-xs text-red-700">{fieldErrors.displayName}</p>
+          ) : null}
         </div>
         <div>
           <label
@@ -98,11 +145,19 @@ export function RegisterPage() {
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              if (fieldErrors.email) {
+                setFieldErrors(prev => ({ ...prev, email: undefined }))
+              }
+            }}
             className={authInputClassName}
             placeholder="you@example.com"
             required
           />
+          {fieldErrors.email ? (
+            <p className="mt-1 text-xs text-red-700">{fieldErrors.email}</p>
+          ) : null}
         </div>
         <div>
           <label
@@ -117,13 +172,21 @@ export function RegisterPage() {
             type="tel"
             autoComplete="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              setPhone(e.target.value)
+              if (fieldErrors.phone) {
+                setFieldErrors(prev => ({ ...prev, phone: undefined }))
+              }
+            }}
             className={authInputClassName}
             placeholder="+243 …"
             required
             minLength={6}
             maxLength={32}
           />
+          {fieldErrors.phone ? (
+            <p className="mt-1 text-xs text-red-700">{fieldErrors.phone}</p>
+          ) : null}
         </div>
         <div>
           <label
@@ -138,12 +201,24 @@ export function RegisterPage() {
             type="password"
             autoComplete="new-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              if (fieldErrors.password || fieldErrors.confirm) {
+                setFieldErrors(prev => ({
+                  ...prev,
+                  password: undefined,
+                  confirm: undefined,
+                }))
+              }
+            }}
             className={authInputClassName}
             placeholder="At least 6 characters"
             required
             minLength={6}
           />
+          {fieldErrors.password ? (
+            <p className="mt-1 text-xs text-red-700">{fieldErrors.password}</p>
+          ) : null}
         </div>
         <div>
           <label
@@ -158,11 +233,19 @@ export function RegisterPage() {
             type="password"
             autoComplete="new-password"
             value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
+            onChange={(e) => {
+              setConfirm(e.target.value)
+              if (fieldErrors.confirm) {
+                setFieldErrors(prev => ({ ...prev, confirm: undefined }))
+              }
+            }}
             className={authInputClassName}
             placeholder="Repeat password"
             required
           />
+          {fieldErrors.confirm ? (
+            <p className="mt-1 text-xs text-red-700">{fieldErrors.confirm}</p>
+          ) : null}
         </div>
 
         {error ? (
