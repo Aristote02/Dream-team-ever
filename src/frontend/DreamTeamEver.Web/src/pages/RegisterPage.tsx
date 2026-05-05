@@ -65,11 +65,11 @@ export function RegisterPage() {
 
   return (
     <AuthScreenLayout subtitle="Join the team. Kinshasa · Estd 2025">
-      <form className="space-y-5" onSubmit={onSubmit} noValidate>
+      <form className="space-y-4 sm:space-y-5" onSubmit={onSubmit} noValidate>
         <div>
           <label
             htmlFor="register-name"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700"
+            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
             Full name
           </label>
@@ -88,7 +88,7 @@ export function RegisterPage() {
         <div>
           <label
             htmlFor="register-email"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700"
+            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
             Email
           </label>
@@ -107,7 +107,7 @@ export function RegisterPage() {
         <div>
           <label
             htmlFor="register-phone"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700"
+            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
             Phone
           </label>
@@ -128,7 +128,7 @@ export function RegisterPage() {
         <div>
           <label
             htmlFor="register-password"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700"
+            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
             Password
           </label>
@@ -148,7 +148,7 @@ export function RegisterPage() {
         <div>
           <label
             htmlFor="register-confirm"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700"
+            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
             Confirm password
           </label>
@@ -177,17 +177,17 @@ export function RegisterPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg bg-gradient-to-b from-amber-500 to-amber-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 disabled:opacity-60"
+          className="w-full rounded-lg bg-gradient-to-b from-amber-500 to-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 disabled:opacity-60 sm:py-3"
         >
           {submitting ? "Creating account…" : "Create account"}
         </button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-stone-500">
+      <p className="mt-5 text-center text-sm text-stone-500 sm:mt-8">
         Already have an account?{' '}
         <Link
           to="/login"
-          className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline"
+          className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
         >
           Sign in
         </Link>

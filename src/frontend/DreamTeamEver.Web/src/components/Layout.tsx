@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import { ThemeToggle } from './ThemeToggle'
 import './Layout.css'
 
 export function Layout() {
@@ -17,6 +18,7 @@ export function Layout() {
           Payments
         </Link>
         <nav className="app-nav">
+          <ThemeToggle className="app-theme-toggle" />
           {isAdmin ? (
             <Link to="/students">Students</Link>
           ) : (

@@ -11,7 +11,7 @@ export function HomePage() {
   const phoneDisplay = profile?.phone?.trim() || '—'
 
   return (
-    <div className="font-dream-sans -mx-6 -mt-2 min-h-[calc(100svh-8rem)] max-w-full bg-white px-4 pb-8 pt-2 sm:mx-0 sm:mt-0 sm:rounded-none">
+    <div className="font-dream-sans -mx-6 -mt-2 min-h-[calc(100svh-8rem)] max-w-full bg-white px-4 pb-8 pt-2 dark:bg-black sm:mx-0 sm:mt-0 sm:rounded-none">
       <header className="flex items-center py-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-amber-200/80 bg-white p-0.5 shadow-sm ring-1 ring-amber-100">
@@ -22,7 +22,7 @@ export function HomePage() {
             />
           </div>
           <div className="min-w-0 text-left">
-            <p className="font-dream-serif truncate text-base font-semibold text-stone-900">
+            <p className="font-dream-serif truncate text-base font-semibold text-stone-900 dark:text-white">
               Dream Team Ever
             </p>
             <p className="text-xs text-stone-500">Wallet</p>
@@ -61,14 +61,14 @@ export function HomePage() {
         </div>
       </div>
 
-      <p className="mx-auto mb-8 max-w-[340px] text-center text-sm text-stone-600">
-        <span className="font-medium text-stone-800">Phone Number: </span>
+      <p className="mx-auto mb-8 max-w-[340px] text-center text-sm text-stone-600 dark:text-stone-300">
+        <span className="font-medium text-stone-800 dark:text-white">Phone Number: </span>
         <span className="font-mono text-stone-700">{phoneDisplay}</span>
       </p>
 
       {/* Bottom actions — Payment & Historics only for students */}
       <div
-        className={`mx-auto mt-2 flex max-w-[340px] gap-2 rounded-2xl bg-white p-4 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.08)] ring-1 ring-stone-200/80 ${
+        className={`mx-auto mt-2 flex max-w-[340px] gap-2 rounded-2xl bg-white p-4 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.08)] ring-1 ring-stone-200/80 dark:bg-stone-950 dark:ring-stone-800 ${
           isAdmin ? 'justify-center' : 'justify-between'
         }`}
       >
