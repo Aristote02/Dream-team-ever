@@ -24,6 +24,9 @@ public sealed class MemberRepository : Repository<Member>, IMemberRepository
     public Task<Member?> GetTrackedByIdAsync(Guid memberId, CancellationToken cancellationToken) =>
         Query().FirstOrDefaultAsync(m => m.Id == memberId, cancellationToken);
 
+    public Task<Member?> GetTrackedByUserIdAsync(Guid userId, CancellationToken cancellationToken) =>
+        Query().FirstOrDefaultAsync(m => m.UserId == userId, cancellationToken);
+
     public Task<bool> MatriculeCodeExistsAsync(string matriculeCode, CancellationToken cancellationToken) =>
         Query().AsNoTracking().AnyAsync(m => m.MatriculeCode == matriculeCode, cancellationToken);
 

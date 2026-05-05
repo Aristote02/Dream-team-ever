@@ -8,4 +8,6 @@ public record AuthResponse(
     string Email,
     string Role,
     Guid UserId,
-    Guid? MemberId);
+    Guid? MemberId,
+    string? Phone,
+    string? MatriculeCode);

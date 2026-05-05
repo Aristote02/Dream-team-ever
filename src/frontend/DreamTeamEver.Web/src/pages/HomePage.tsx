@@ -1,14 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
-import { findById } from '../auth/userDirectory'
 
 const LOGO = '/brand-logo.png'
 
 export function HomePage() {
   const { user, isAdmin } = useAuth()
-  const profile = user?.id ? findById(user.id) : null
-  const matriculeDisplay = profile?.matricule?.trim() || '—'
-  const phoneDisplay = profile?.phone?.trim() || '—'
+  const matriculeDisplay = user?.matriculeCode?.trim() || '—'
+  const phoneDisplay = user?.phone?.trim() || '—'
 
   return (
     <div className="font-dream-sans -mx-6 -mt-2 min-h-[calc(100svh-8rem)] max-w-full bg-white px-4 pb-8 pt-2 dark:bg-black sm:mx-0 sm:mt-0 sm:rounded-none">
@@ -101,7 +99,7 @@ export function HomePage() {
             )}
           </span>
           <span className="max-w-[5.5rem] text-[0.7rem] font-medium leading-snug text-stone-600">
-            {isAdmin ? 'Students' : 'Add phone number'}
+            {isAdmin ? 'Students' : 'View'}
           </span>
         </Link>
         {!isAdmin ? (

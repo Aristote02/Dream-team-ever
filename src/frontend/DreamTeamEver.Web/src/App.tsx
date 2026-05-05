@@ -1,15 +1,15 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
-import { Layout } from './components/Layout'
-import { RequireAdmin } from './components/RequireAdmin'
-import { CheckoutPage } from './pages/CheckoutPage'
-import { HistoricsPage } from './pages/HistoricsPage'
-import { HomePage } from './pages/HomePage'
-import { PhonePage } from './pages/PhonePage'
-import { LoginPage } from './pages/LoginPage'
-import { RegisterPage } from './pages/RegisterPage'
-import { StudentsPage } from './pages/StudentsPage'
-import { PaymentCancelPage } from './pages/PaymentCancelPage'
-import { PaymentSuccessPage } from './pages/PaymentSuccessPage'
+import { Navigate, Route, Routes } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import { RequireAdmin } from "./components/RequireAdmin";
+import { CheckoutPage } from "./pages/CheckoutPage";
+import { HistoricsPage } from "./pages/HistoricsPage";
+import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { PaymentCancelPage } from "./pages/PaymentCancelPage";
+import { PaymentSuccessPage } from "./pages/PaymentSuccessPage";
+import { RegisterPage } from "./pages/RegisterPage";
+import { StudentsPage } from "./pages/StudentsPage";
+import { ViewPage } from "./pages/ViewPage";
 
 export default function App() {
   return (
@@ -19,7 +19,7 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<Layout />}>
         <Route path="home" element={<HomePage />} />
-        <Route path="phone" element={<PhonePage />} />
+        <Route path="phone" element={<ViewPage />} />
         <Route
           path="students"
           element={
@@ -35,5 +35,5 @@ export default function App() {
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>
     </Routes>
-  )
+  );
 }

@@ -193,7 +193,9 @@ public sealed class AuthService : IAuthService
             user.Email,
             user.Role.ToString(),
             user.Id,
-            member?.Id);
+            member?.Id,
+            member?.Phone,
+            member?.MatriculeCode);
     }
 
     private static bool FixedTimeHexEquals(string aHex, string bHex)
