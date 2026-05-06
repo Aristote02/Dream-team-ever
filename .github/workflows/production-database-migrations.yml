@@ -47,13 +47,20 @@ jobs:
           dotnet restore
           "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj"
 
+      - name: Build MigrationService
+        run: >
+          dotnet build
+          "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj"
+          -c Release --no-restore -v minimal
+
       - name: Run MigrationService
         run: |
           set -euo pipefail
-          echo "::group::dotnet run MigrationService"
+          echo "::group::MigrationService runtime logs"
+          echo "If this stops after build output in the UI, scroll down — migration messages come after MSBuild."
           dotnet run \
+            --no-build \
             --no-launch-profile \
             --project "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj" \
-            -c Release \
-            --verbosity minimal
+            -c Release
           echo "::endgroup::"
