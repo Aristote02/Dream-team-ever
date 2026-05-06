@@ -1,14 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { fetchMyPayments, type PaymentTransactionDto } from '../api/authApi'
 import { useAuth } from '../auth/useAuth'
-
-const CACHE_TTL_MS = 2 * 60 * 1000
-
-type PaymentsCache = {
-  at: number
-  rows: PaymentTransactionDto[]
-}
 
 function formatAmount(amount: number, currency: string): string {
   return new Intl.NumberFormat(undefined, {
@@ -18,80 +12,23 @@ function formatAmount(amount: number, currency: string): string {
   }).format(amount)
 }
 
-function cacheKey(userId: string): string {
-  return `dreamteam-historics:${userId}`
-}
-
-function readCachedPayments(userId: string): PaymentTransactionDto[] | null {
-  try {
-    const raw = sessionStorage.getItem(cacheKey(userId))
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as PaymentsCache
-    if (!Array.isArray(parsed.rows) || typeof parsed.at !== 'number') return null
-    if (Date.now() - parsed.at > CACHE_TTL_MS) return null
-    return parsed.rows
-  } catch {
-    return null
-  }
-}
-
-function writeCachedPayments(userId: string, rows: PaymentTransactionDto[]) {
-  const payload: PaymentsCache = { at: Date.now(), rows }
-  sessionStorage.setItem(cacheKey(userId), JSON.stringify(payload))
-}
-
 export function HistoricsPage() {
   const { user, getAccessToken } = useAuth()
-  const [rows, setRows] = useState<PaymentTransactionDto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      if (!user) {
-        setLoading(false)
-        return
-      }
-
-      const cached = readCachedPayments(user.id)
-      if (cached) {
-        setRows(cached)
-        setLoading(false)
-        return
-      }
-
-      setLoading(true)
-      setError(null)
+  const query = useQuery<PaymentTransactionDto[], Error>({
+    queryKey: ['member', 'payments', user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => {
       const token = await getAccessToken()
-      if (!token) {
-        if (!cancelled) {
-          setError('Session expired. Please sign in again.')
-          setLoading(false)
-        }
-        return
-      }
-
+      if (!token) throw new Error('Session expired. Please sign in again.')
       const result = await fetchMyPayments(token)
-      if (cancelled) return
+      if (!result.ok) throw new Error('Could not load your payment historics.')
+      return result.data
+    },
+  })
 
-      if (!result.ok) {
-        setError('Could not load your payment historics.')
-        setLoading(false)
-        return
-      }
-
-      setRows(result.data)
-      writeCachedPayments(user.id, result.data)
-      setLoading(false)
-    }
-
-    void load()
-    return () => {
-      cancelled = true
-    }
-  }, [user, getAccessToken])
+  const rows = query.data ?? []
+  const loading = query.isLoading
+  const error = query.error?.message ?? null
 
   const hasRows = useMemo(() => rows.length > 0, [rows.length])
 

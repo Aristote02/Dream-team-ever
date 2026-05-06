@@ -19,11 +19,6 @@ export function Layout() {
         </Link>
         <nav className="app-nav">
           <ThemeToggle className="app-theme-toggle" />
-          {isAdmin ? (
-            <Link to="/students">Students</Link>
-          ) : (
-            <Link to="/home">Home</Link>
-          )}
           {user ? (
             <>
               <span className="app-nav-user" title={user.email}>

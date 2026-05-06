@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   fetchAdminPaymentsPaged,
@@ -23,48 +24,24 @@ function formatDate(value: string | null): string {
 
 export function AdminPaymentsPage() {
   const { getAccessToken } = useAuth();
-  const [rows, setRows] = useState<PaymentTransactionDto[]>([]);
   const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      setLoading(true);
-      setError(null);
+  const paymentsQuery = useQuery({
+    queryKey: ["admin", "payments", page, PAGE_SIZE],
+    queryFn: async () => {
       const token = await getAccessToken();
-      if (!token) {
-        if (!cancelled) {
-          setError("Session expired. Please sign in again.");
-          setLoading(false);
-        }
-        return;
-      }
-
+      if (!token) throw new Error("Session expired. Please sign in again.");
       const result = await fetchAdminPaymentsPaged(token, page, PAGE_SIZE);
-      if (cancelled) return;
+      if (!result.ok) throw new Error(result.message ?? "Could not load payments.");
+      return result.data;
+    },
+    placeholderData: (prev) => prev,
+  });
 
-      if (!result.ok) {
-        setError(result.message ?? "Could not load payments.");
-        setLoading(false);
-        return;
-      }
-
-      setRows(result.data.items ?? []);
-      setTotalCount(result.data.totalCount);
-      setTotalPages(Math.max(1, result.data.totalPages));
-      setLoading(false);
-    }
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [getAccessToken, page]);
+  const rows: PaymentTransactionDto[] = paymentsQuery.data?.items ?? [];
+  const totalCount = paymentsQuery.data?.totalCount ?? 0;
+  const totalPages = Math.max(1, paymentsQuery.data?.totalPages ?? 1);
+  const loading = paymentsQuery.isLoading;
+  const error = paymentsQuery.error instanceof Error ? paymentsQuery.error.message : null;
 
   const rangeText = useMemo(() => {
     if (totalCount === 0) return "0 payments";

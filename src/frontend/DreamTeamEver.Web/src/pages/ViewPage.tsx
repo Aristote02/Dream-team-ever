@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchCurrentMember, updateMyProfileRequest } from "../api/authApi";
 import { useAuth } from "../auth/useAuth";
@@ -13,53 +14,47 @@ type MemberView = {
 
 export function ViewPage() {
   const { user, getAccessToken, refreshSession } = useAuth();
-  const [model, setModel] = useState<MemberView | null>(null);
+  const queryClient = useQueryClient();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
+  const profileQuery = useQuery<MemberView, Error>({
+    queryKey: ["member", "profile", user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => {
       const token = await getAccessToken();
       if (!token) {
-        if (!cancelled) {
-          setError("Session expired. Please sign in again.");
-          setLoading(false);
-        }
-        return;
+        throw new Error("Session expired. Please sign in again.");
       }
-
       const me = await fetchCurrentMember(token);
-      if (!cancelled) {
-        if (!me.ok) {
-          setError("Could not load your profile.");
-          setLoading(false);
-          return;
-        }
-        setModel(me.data);
-        setFullName(me.data.fullName);
-        setPhone(me.data.phone);
-        setLoading(false);
-      }
-    }
+      if (!me.ok) throw new Error("Could not load your profile.");
+      return me.data;
+    },
+  });
 
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [user, getAccessToken]);
+  useEffect(() => {
+    const profile = profileQuery.data;
+    if (!profile) return;
+    setFullName(profile.fullName);
+    setPhone(profile.phone);
+  }, [profileQuery.data]);
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ nextFullName, nextPhone }: { nextFullName: string; nextPhone: string }) => {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Session expired. Please sign in again.");
+      const updated = await updateMyProfileRequest(token, nextFullName, nextPhone);
+      if (!updated.ok) throw new Error(updated.message ?? "Could not save your profile.");
+      return updated.data;
+    },
+    onSuccess: async (updatedProfile) => {
+      queryClient.setQueryData(["member", "profile", user?.id], updatedProfile);
+      setSaved(true);
+      await refreshSession();
+    },
+  });
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -71,28 +66,18 @@ export function ViewPage() {
       return;
     }
 
-    setSaving(true);
-    const token = await getAccessToken();
-    if (!token) {
-      setError("Session expired. Please sign in again.");
-      setSaving(false);
-      return;
+    try {
+      await updateMutation.mutateAsync({ nextFullName: fullName, nextPhone: phone });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save your profile.");
     }
-
-    const updated = await updateMyProfileRequest(token, fullName, phone);
-    if (!updated.ok) {
-      setError(updated.message ?? "Could not save your profile.");
-      setSaving(false);
-      return;
-    }
-
-    setModel(updated.data);
-    setFullName(updated.data.fullName);
-    setPhone(updated.data.phone);
-    setSaved(true);
-    await refreshSession();
-    setSaving(false);
   }
+
+  const model = profileQuery.data ?? null;
+  const loading = profileQuery.isLoading;
+  const saving = updateMutation.isPending;
+  const queryError = profileQuery.error instanceof Error ? profileQuery.error.message : null;
+  const effectiveError = error ?? queryError;
 
   return (
     <div className="font-dream-sans -mx-6 -mt-2 text-left">
@@ -169,9 +154,9 @@ export function ViewPage() {
               <input value={model?.createdAt ? new Date(model.createdAt).toLocaleString() : "—"} readOnly className={`${authInputClassName} cursor-not-allowed opacity-80`} />
             </div>
 
-            {error ? (
+            {effectiveError ? (
               <p className="text-sm text-red-700" role="alert">
-                {error}
+                {effectiveError}
               </p>
             ) : null}
             {saved ? (
