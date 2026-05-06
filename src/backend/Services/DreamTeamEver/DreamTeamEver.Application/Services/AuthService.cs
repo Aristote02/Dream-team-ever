@@ -51,7 +51,9 @@ public sealed class AuthService : IAuthService
     {
         var email = request.Email.Trim();
         if (await _users.ExistsByEmailAsync(email, cancellationToken))
+        {
             return null;
+        }
 
         var user = new User
         {
@@ -86,11 +88,15 @@ public sealed class AuthService : IAuthService
         var user = await _users.GetByEmailWithMemberProfileAsync(email, cancellationToken);
 
         if (user is null)
+        {
             return null;
+        }
 
         var verification = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (verification == PasswordVerificationResult.Failed)
+        {
             return null;
+        }
 
         return await IssueTokensAsync(user, user.MemberProfile, cancellationToken);
     }
@@ -101,7 +107,9 @@ public sealed class AuthService : IAuthService
         var existing = await _refreshTokens.FindActiveByTokenHashWithUserAsync(hash, cancellationToken);
 
         if (existing is null)
+        {
             return null;
+        }
 
         existing.RevokedAtUtc = DateTimeOffset.UtcNow;
         await _refreshTokens.SaveChangesAsync(cancellationToken);
@@ -115,7 +123,9 @@ public sealed class AuthService : IAuthService
 
         var tokens = await _refreshTokens.ListActiveByUserIdAsync(userId, cancellationToken);
         foreach (var t in tokens)
+        {
             t.RevokedAtUtc = DateTimeOffset.UtcNow;
+        }
 
         await _refreshTokens.SaveChangesAsync(cancellationToken);
     }
@@ -125,7 +135,9 @@ public sealed class AuthService : IAuthService
         var email = request.Email.Trim();
         var user = await _users.GetByEmailTrackedAsync(email, cancellationToken);
         if (user is null)
+        {
             return;
+        }
 
         var plain = TokenCrypto.GenerateOpaqueToken();
         user.PasswordResetTokenHash = TokenCrypto.Hash(plain);
@@ -133,10 +145,12 @@ public sealed class AuthService : IAuthService
         await _users.SaveChangesAsync(cancellationToken);
 
         if (_env.IsDevelopment())
+        {
             _logger.LogWarning(
                 "Password reset token for {Email} (dev only — replace with email delivery): {Token}",
                 email,
                 plain);
+        }
     }
 
     public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default)
@@ -144,14 +158,20 @@ public sealed class AuthService : IAuthService
         var email = request.Email.Trim();
         var user = await _users.GetByEmailTrackedAsync(email, cancellationToken);
         if (user is null || user.PasswordResetTokenHash is null || user.PasswordResetExpiresAt is null)
+        {
             return false;
+        }
 
         if (user.PasswordResetExpiresAt < DateTimeOffset.UtcNow)
+        {
             return false;
+        }
 
         var computedHash = TokenCrypto.Hash(request.Token);
         if (!FixedTimeHexEquals(user.PasswordResetTokenHash, computedHash))
+        {
             return false;
+        }
 
         user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
         user.PasswordResetTokenHash = null;
@@ -159,7 +179,9 @@ public sealed class AuthService : IAuthService
 
         var refreshTokens = await _refreshTokens.ListActiveByUserIdAsync(user.Id, cancellationToken);
         foreach (var t in refreshTokens)
+        {
             t.RevokedAtUtc = DateTimeOffset.UtcNow;
+        }
 
         await _users.SaveChangesAsync(cancellationToken);
         return true;
