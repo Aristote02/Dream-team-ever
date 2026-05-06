@@ -69,11 +69,14 @@ public static class WebApplicationExtensions
         });
 
         app.MapDefaultEndpoints();
-        
+
+        // Render (and many proxies) probe with HEAD; MapGet alone returns 405 for HEAD and fails deploy health checks.
+        static IResult LivenessOk() => Results.Ok();
+        app.MapMethods("/healthz", new[] { "GET", "HEAD" }, LivenessOk);
+
         if (!app.Environment.IsDevelopment())
         {
-            app.MapGet("/health", () => Results.Ok());
-            app.MapGet("/healthz", () => Results.Ok());
+            app.MapMethods("/health", new[] { "GET", "HEAD" }, LivenessOk);
         }
 
         return app;
