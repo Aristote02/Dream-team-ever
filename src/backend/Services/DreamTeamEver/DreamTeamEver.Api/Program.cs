@@ -6,7 +6,9 @@ builder.AddDreamTeamEver();
 
 var app = builder.Build();
 
-app.MapHealthChecks("/healthz");
+app.MapGet("/healthz", () => Results.Ok("healthy"));
+
+// app.MapHealthChecks("/healthz");
 
 app.UseDreamTeamEver();
 
