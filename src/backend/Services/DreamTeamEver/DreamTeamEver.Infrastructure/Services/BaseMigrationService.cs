@@ -67,21 +67,16 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 			{
 				try
 				{
-					_logger.LogInformation("Checking database connectivity...");
-					try
+					_logger.LogInformation("Checking if database exists...");
+					var databaseExists = await dbContext.Database.CanConnectAsync(stoppingToken);
+
+					if (!databaseExists)
 					{
-						await dbContext.Database.OpenConnectionAsync(stoppingToken);
-					}
-					catch (Exception ex)
-					{
-						_logger.LogError(ex,
-							"Cannot open database connection. Check host, port, database name, user/password, SSL " +
-							"(Render external URLs often need Ssl Mode=Require), and URI password encoding (%40 for @).");
-						Environment.ExitCode = -1;
+						_logger.LogInformation("Database does not exist. Skipping migration.");
 						return;
 					}
 
-					_logger.LogInformation("Database reachable. Checking for EF migrations history table...");
+					_logger.LogInformation("Database exists. Checking for EF migrations history table...");
 
 					var migrationsHistoryExists = false;
 					var migrationsCount = 0;
