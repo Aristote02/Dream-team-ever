@@ -23,44 +23,24 @@ jobs:
       ConnectionStrings__DreamTeamEverDbConnectionString: ${{ secrets.PRODUCTION_DATABASE_URL }}
       ASPNETCORE_ENVIRONMENT: Production
 
-    defaults:
-      run:
-        working-directory: .
-
     steps:
-      - name: Check secret is configured
+      - name: Check PRODUCTION_DATABASE_URL is set
         run: |
           if [ -z "$ConnectionStrings__DreamTeamEverDbConnectionString" ]; then
-            echo "::error::Secret PRODUCTION_DATABASE_URL is empty. Add it under Settings → Secrets and variables → Actions."
+            echo "::error::Secret PRODUCTION_DATABASE_URL is empty."
             exit 1
           fi
 
       - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
-
-      - name: Restore MigrationService
-        run: >
-          dotnet restore
-          "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj"
-
-      - name: Build MigrationService
-        run: >
-          dotnet build
-          "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj"
-          -c Release --no-restore -v minimal
 
       - name: Run MigrationService
         run: |
           set -euo pipefail
-          echo "::group::MigrationService runtime logs"
-          echo "If this stops after build output in the UI, scroll down — migration messages come after MSBuild."
           dotnet run \
-            --no-build \
             --no-launch-profile \
             --project "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj" \
             -c Release
-          echo "::endgroup::"
