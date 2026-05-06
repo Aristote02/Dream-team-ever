@@ -74,6 +74,12 @@ public static class WebApplicationExtensions
         });
 
         app.MapDefaultEndpoints();
+        
+        if (!app.Environment.IsDevelopment())
+        {
+            app.MapGet("/health", () => Results.Ok());
+            app.MapGet("/healthz", () => Results.Ok());
+        }
 
         return app;
     }
