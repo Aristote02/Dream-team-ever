@@ -25,11 +25,13 @@ public sealed class PaymentTransactionRepository : Repository<PaymentTransaction
 
     public Task<List<PaymentTransaction>> GetAllCreatedDescAsync(CancellationToken cancellationToken) =>
         Query().AsNoTracking()
+            .Include(p => p.Member)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
 
     public Task<List<PaymentTransaction>> ListByUserCreatedDescAsync(Guid userId, CancellationToken cancellationToken) =>
         Query().AsNoTracking()
+            .Include(p => p.Member)
             .Where(p => p.Member.UserId == userId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);

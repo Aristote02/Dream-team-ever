@@ -1,10 +1,11 @@
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Dtos;
+using DreamTeamEver.Domain.Contracts.Pagination;
 using FastEndpoints;
 
 namespace DreamTeamEver.Api.Features.Admin.GetPayments;
 
-public sealed class GetPaymentsEndpoint : EndpointWithoutRequest<List<PaymentTransactionDto>>
+public sealed class GetPaymentsEndpoint : Endpoint<GetAllPaymentsRequest, PagedResult<PaymentTransactionDto>>
 {
     private readonly IAdminService _admin;
 
@@ -13,12 +14,11 @@ public sealed class GetPaymentsEndpoint : EndpointWithoutRequest<List<PaymentTra
     public override void Configure()
     {
         Get("/api/admin/payments");
-        Roles("Admin");
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(GetAllPaymentsRequest req, CancellationToken ct)
     {
-        var list = await _admin.GetAllPaymentsAsync(ct);
-        await Send.OkAsync(list.ToList());
+        var page = await _admin.GetPaymentsPagedAsync(req.PageNumber, req.PageSize, ct);
+        await Send.OkAsync(page);
     }
 }

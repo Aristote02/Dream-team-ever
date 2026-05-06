@@ -23,7 +23,8 @@ public sealed class DreamTeamEverMappingRegister : IRegister
         config.NewConfig<Member, MemberDto>()
             .Map(dest => dest.Email, src => src.User.Email);
 
-        config.NewConfig<PaymentTransaction, PaymentTransactionDto>();
+        config.NewConfig<PaymentTransaction, PaymentTransactionDto>()
+            .Map(dest => dest.MemberFullName, src => src.Member == null ? null : src.Member.FullName);
     }
 
     /// <summary>Registers mappings on the global config (idempotent for repeated host setup).</summary>

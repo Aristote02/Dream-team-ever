@@ -4,7 +4,7 @@ namespace DreamTeamEver.Application.Dtos;
 
 public record PaymentTransactionDto(
     Guid Id,
-    Guid MemberId,
+    string? MemberFullName,
     PaymentMethod Method,
     decimal Amount,
     string Currency,
