@@ -23,7 +23,7 @@ namespace DreamTeamEver.ServiceDefaults;
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 public static class Extensions
 {
-	private const string HealthEndpointPath = "/health";
+	private const string HealthEndpointPath = "/healthz";
 	private const string AlivenessEndpointPath = "/alive";
 
 	public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
@@ -105,7 +105,7 @@ public static class Extensions
 
 	public static WebApplication MapDefaultEndpoints(this WebApplication app)
 	{
-        app.MapHealthChecks("/healthz");
+        app.MapHealthChecks(HealthEndpointPath);
 
         app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
         {
