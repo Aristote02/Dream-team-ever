@@ -14,7 +14,7 @@ public static class SwaggerConfiguration
 
         services.SwaggerDocument(o =>
         {
-            o.EnableJWTBearerAuth = false;
+            o.EnableJWTBearerAuth = true;
 
             o.DocumentSettings = s =>
             {

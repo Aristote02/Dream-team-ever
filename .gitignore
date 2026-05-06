@@ -95,6 +95,10 @@ _ReSharper.Caches/
 **/BuildHost-net472/
 **/BuildHost-netcore/
 
+# JetBrains / Rider generated build hosts
+**/BuildHost-net472/
+**/BuildHost-netcore/
+
 # Legacy
 project.lock.json
 
