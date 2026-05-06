@@ -26,7 +26,7 @@ export type MemberDto = {
 
 export type PaymentTransactionDto = {
   id: string
-  memberId: string
+  memberFullName: string | null
   method: string
   amount: number
   currency: string
@@ -47,6 +47,16 @@ export type AdminMemberSummaryDto = {
   matriculeCode: string | null
   matriculeIssuedAt: string | null
   createdAt: string
+}
+
+export type PagedResultDto<T> = {
+  items: T[] | null
+  totalCount: number
+  pageNumber: number
+  pageSize: number
+  totalPages: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
 }
 
 async function readJson(res: Response): Promise<unknown> {
@@ -279,6 +289,44 @@ export async function deleteAdminUser(
   })
 
   if (res.ok) return { ok: true }
+
+  const body = (await readJson(res)) as { error?: string; message?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message:
+      typeof body?.message === 'string'
+        ? body.message
+        : typeof body?.error === 'string'
+          ? body.error
+          : undefined,
+  }
+}
+
+export async function fetchAdminPaymentsPaged(
+  accessToken: string,
+  pageNumber: number,
+  pageSize: number,
+): Promise<
+  | { ok: true; data: PagedResultDto<PaymentTransactionDto> }
+  | { ok: false; status: number; message?: string }
+> {
+  const params = new URLSearchParams({
+    pageNumber: String(pageNumber),
+    pageSize: String(pageSize),
+  })
+
+  const res = await fetch(apiUrl(`/api/admin/payments?${params.toString()}`), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+
+  if (res.ok) {
+    const data = (await readJson(res)) as PagedResultDto<PaymentTransactionDto>
+    return { ok: true, data }
+  }
 
   const body = (await readJson(res)) as { error?: string; message?: string } | null
   return {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import {
   deleteAdminUser,
@@ -129,7 +129,7 @@ export function ManageUsersPage() {
           <h1 className="font-dream-serif text-2xl font-semibold leading-tight text-stone-900 sm:text-3xl">Manage Users</h1>
           <p className="mt-1 text-sm text-stone-500">Manage members: matricule, phone, roles, and accounts</p>
         </div>
-        <div className="w-full rounded-2xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm ring-1 ring-stone-100 sm:w-auto sm:min-w-[200px]">
+        <div className="rounded-2xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm ring-1 ring-stone-100 sm:min-w-[200px]">
           <p className="text-xs uppercase tracking-wide text-stone-500">Students</p>
           <p className="mt-1 text-3xl font-semibold text-stone-900">{studentCount}</p>
         </div>
@@ -265,6 +265,27 @@ export function ManageUsersPage() {
             ) : null}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-4 flex justify-end">
+        <Link
+          to="/admin/payments"
+          aria-label="View all payments"
+          title="View all payments"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:bg-stone-50 hover:text-stone-900"
+        >
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            aria-hidden
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h10M4 18h7" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 14v6m-3-3h6" />
+          </svg>
+        </Link>
       </div>
     </div>
   );

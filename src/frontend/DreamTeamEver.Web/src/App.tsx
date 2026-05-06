@@ -5,6 +5,7 @@ import { CheckoutPage } from "./pages/CheckoutPage";
 import { HistoricsPage } from "./pages/HistoricsPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
+import { AdminPaymentsPage } from "./pages/AdminPaymentsPage";
 import { ManageUsersPage } from "./pages/ManageUsersPage";
 import { PaymentCancelPage } from "./pages/PaymentCancelPage";
 import { PaymentSuccessPage } from "./pages/PaymentSuccessPage";
@@ -25,6 +26,14 @@ export default function App() {
           element={
             <RequireAdmin>
               <ManageUsersPage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="admin/payments"
+          element={
+            <RequireAdmin>
+              <AdminPaymentsPage />
             </RequireAdmin>
           }
         />

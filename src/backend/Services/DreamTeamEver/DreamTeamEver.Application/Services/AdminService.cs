@@ -1,6 +1,7 @@
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Abstractions.Repositories;
 using DreamTeamEver.Application.Dtos;
+using DreamTeamEver.Domain.Contracts.Pagination;
 using Mapster;
 
 namespace DreamTeamEver.Application.Services;
@@ -43,6 +44,32 @@ public sealed class AdminService : IAdminService
     {
         var rows = await _payments.GetAllCreatedDescAsync(cancellationToken);
         return rows.Adapt<List<PaymentTransactionDto>>();
+    }
+
+    public async Task<PagedResult<PaymentTransactionDto>> GetPaymentsPagedAsync(
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var safePage = Math.Max(1, pageNumber);
+        var safeSize = Math.Clamp(pageSize, 1, 200);
+
+        var paged = await _payments.GetPagedAsync(
+            safePage,
+            safeSize,
+            _ => true,
+            q => q.OrderByDescending(p => p.CreatedAt),
+            cancellationToken,
+            asNoTracking: true,
+            p => p.Member);
+
+        return new PagedResult<PaymentTransactionDto>
+        {
+            Items = (paged.Items ?? []).Adapt<List<PaymentTransactionDto>>(),
+            PageNumber = paged.PageNumber,
+            PageSize = paged.PageSize,
+            TotalCount = paged.TotalCount,
+        };
     }
 
     public async Task<bool> DeleteUserAsync(Guid userId, CancellationToken cancellationToken = default)
