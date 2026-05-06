@@ -53,12 +53,7 @@ public static class WebApplicationExtensions
 
         app.UseForwardedHeaders();
         app.UseCors(DreamTeamEverCorsExtensions.AllowAllPolicy);
-
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseHttpsRedirection();
-        }
-
+        
         app.UseExceptionHandler();
         app.UseProblemDetailsForStatusCodes();
 
