@@ -42,10 +42,18 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - name: Restore and run MigrationService
+      - name: Restore MigrationService
+        run: >
+          dotnet restore
+          "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj"
+
+      - name: Run MigrationService
         run: |
-          dotnet restore "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj"
+          set -euo pipefail
+          echo "::group::dotnet run MigrationService"
           dotnet run \
             --no-launch-profile \
             --project "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj" \
-            -c Release
+            -c Release \
+            --verbosity minimal
+          echo "::endgroup::"
