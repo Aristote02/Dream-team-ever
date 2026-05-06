@@ -4,6 +4,7 @@ using DreamTeamEver.Domain.Options;
 using DreamTeamEver.ServiceDefaults;
 using FastEndpoints;
 using FastEndpoints.Swagger;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
 using NSwag.AspNetCore;
@@ -19,6 +20,29 @@ public static class WebApplicationExtensions
     /// </summary>
     public static WebApplication UseDreamTeamEver(this WebApplication app)
     {
+        app.Use(async (context, next) =>
+        {
+            var normalizedPath = (context.Request.Path.Value ?? string.Empty).TrimEnd('/');
+            if (normalizedPath.Length == 0)
+                normalizedPath = "/";
+
+            var isHealthz = string.Equals(normalizedPath, "/healthz", StringComparison.OrdinalIgnoreCase);
+            var isHealth = !app.Environment.IsDevelopment()
+                && string.Equals(normalizedPath, "/health", StringComparison.OrdinalIgnoreCase);
+
+            if (isHealthz || isHealth)
+            {
+                var method = context.Request.Method;
+                if (HttpMethods.IsGet(method) || HttpMethods.IsHead(method))
+                {
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                    return;
+                }
+            }
+
+            await next();
+        });
+
         var supportedCultures = new[] { "en-US", "fr-FR" };
         var localizationOptions = new RequestLocalizationOptions()
             .SetDefaultCulture(supportedCultures[0])
@@ -69,14 +93,6 @@ public static class WebApplicationExtensions
         });
 
         app.MapDefaultEndpoints();
-        
-        static IResult LivenessOk() => Results.Ok();
-        app.MapMethods("/healthz", ["GET", "HEAD"], LivenessOk);
-
-        if (!app.Environment.IsDevelopment())
-        {
-            app.MapMethods("/health", ["GET", "HEAD"], LivenessOk);
-        }
 
         return app;
     }
