@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import {
@@ -21,11 +22,9 @@ type MemberRow = {
 
 export function ManageUsersPage() {
   const { user, logout, getAccessToken } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [rows, setRows] = useState<MemberRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -35,23 +34,18 @@ export function ManageUsersPage() {
     phone: "",
   });
 
-  const reload = useCallback(async () => {
-    setError(null);
+  const loadMembers = useCallback(async (): Promise<MemberRow[]> => {
     const token = await getAccessToken();
     if (!token) {
-      setError("Session expired. Please sign in again.");
-      setLoading(false);
-      return;
+      throw new Error("Session expired. Please sign in again.");
     }
 
     const result = await fetchAdminMembers(token);
     if (!result.ok) {
-      setError(result.message ?? "Could not load members.");
-      setLoading(false);
-      return;
+      throw new Error(result.message ?? "Could not load members.");
     }
 
-    const mapped: MemberRow[] = result.data.map((m: AdminMemberSummaryDto) => ({
+    return result.data.map((m: AdminMemberSummaryDto) => ({
       memberId: m.memberId,
       userId: m.userId,
       fullName: m.fullName,
@@ -60,35 +54,44 @@ export function ManageUsersPage() {
       role: m.role === "Admin" ? "admin" : "student",
       matriculeCode: m.matriculeCode,
     }));
-    setRows(mapped);
-    setLoading(false);
   }, [getAccessToken]);
 
-  useEffect(() => {
-    void reload();
-  }, [reload]);
+  const membersQuery = useQuery<MemberRow[], Error>({
+    queryKey: ["admin", "members"],
+    queryFn: loadMembers,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Session expired. Please sign in again.");
+      const result = await deleteAdminUser(token, userId);
+      if (!result.ok) throw new Error(result.message ?? "Could not delete user.");
+      return userId;
+    },
+    onSuccess: async (deletedUserId) => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "members"] });
+      if (user?.id === deletedUserId) {
+        void logout().then(() => navigate("/login", { replace: true }));
+        return;
+      }
+      setMessage("User deleted.");
+      window.setTimeout(() => setMessage(null), 3000);
+    },
+  });
 
   async function onDelete(row: MemberRow) {
     if (!window.confirm(`Delete ${row.fullName} (${row.email})? This cannot be undone.`)) return;
-    const token = await getAccessToken();
-    if (!token) {
-      setError("Session expired. Please sign in again.");
-      return;
+    try {
+      await deleteMutation.mutateAsync(row.userId);
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Could not delete user.");
     }
-
-    const result = await deleteAdminUser(token, row.userId);
-    if (!result.ok) {
-      window.alert(result.message ?? "Could not delete user.");
-      return;
-    }
-    await reload();
-    if (user?.id === row.userId) {
-      void logout().then(() => navigate("/login", { replace: true }));
-      return;
-    }
-    setMessage("User deleted.");
-    window.setTimeout(() => setMessage(null), 3000);
   }
+
+  const rows = membersQuery.data ?? [];
+  const loading = membersQuery.isLoading;
+  const error = membersQuery.error?.message ?? null;
 
   const sortedRows = useMemo(
     () =>
