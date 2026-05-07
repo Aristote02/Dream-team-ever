@@ -28,11 +28,11 @@ public static class Extensions
 
 	public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
 	{
-		//builder.ConfigureOpenTelemetry();
+		builder.ConfigureOpenTelemetry();
 
 		builder.AddDefaultHealthChecks();
 
-		//builder.Services.AddServiceDiscovery();
+		builder.Services.AddServiceDiscovery();
 
 		builder.Services.ConfigureHttpClientDefaults(http =>
 		{
@@ -40,7 +40,7 @@ public static class Extensions
 			http.AddStandardResilienceHandler();
 
 			// Turn on service discovery by default
-			//http.AddServiceDiscovery();
+			http.AddServiceDiscovery();
 		});
 		
 		builder.AddSerilogLogger();
