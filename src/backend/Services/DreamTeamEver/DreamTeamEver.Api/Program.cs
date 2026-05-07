@@ -7,10 +7,12 @@ builder.AddDreamTeamEver();
 
 var app = builder.Build();
 
-app.MapHealthChecks("/healthz", new HealthCheckOptions
+/*app.MapHealthChecks("/healthz", new HealthCheckOptions
 {
     Predicate = r => r.Tags.Contains("live")
-});
+});*/
+
+app.MapGet("/healthz", () => Results.Ok("Healthy"));
 
 app.UseDreamTeamEver();
 
