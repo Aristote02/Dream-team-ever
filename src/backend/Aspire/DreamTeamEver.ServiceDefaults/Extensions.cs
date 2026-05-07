@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using DreamTeamEver.Domain.Options;
 using DreamTeamEver.Domain.Options.Validators;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
@@ -24,7 +23,6 @@ namespace DreamTeamEver.ServiceDefaults;
 public static class Extensions
 {
 	private const string HealthEndpointPath = "/healthz";
-	private const string AlivenessEndpointPath = "/alive";
 
 	public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
 	{
@@ -70,7 +68,6 @@ public static class Extensions
 						// Exclude health check requests from tracing
 						tracing.Filter = context =>
 							!context.Request.Path.StartsWithSegments(HealthEndpointPath)
-							&& !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
 					)
 					// Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
 					//.AddGrpcClientInstrumentation()
@@ -105,11 +102,7 @@ public static class Extensions
 
 	public static WebApplication MapDefaultEndpoints(this WebApplication app)
 	{
-        app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
-        {
-            Predicate = r => r.Tags.Contains("live")
-        });
-
+        // Health routes are mapped explicitly by each service (e.g., /healthz in API Program.cs).
         return app;
 	}
 

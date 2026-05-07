@@ -4,8 +4,6 @@ using DreamTeamEver.Domain.Options;
 using DreamTeamEver.ServiceDefaults;
 using FastEndpoints;
 using FastEndpoints.Swagger;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
 using NSwag.AspNetCore;
 using System.Text.Json;
