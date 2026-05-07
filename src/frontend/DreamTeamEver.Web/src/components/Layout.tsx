@@ -4,7 +4,7 @@ import { ThemeToggle } from './ThemeToggle'
 import './Layout.css'
 
 export function Layout() {
-  const { user, logout, isAdmin } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   function handleSignOut() {
