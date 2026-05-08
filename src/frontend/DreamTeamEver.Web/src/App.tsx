@@ -5,6 +5,7 @@ import { CheckoutPage } from "./pages/CheckoutPage";
 import { HistoricsPage } from "./pages/HistoricsPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { AdminPaymentsPage } from "./pages/AdminPaymentsPage";
 import { ManageUsersPage } from "./pages/ManageUsersPage";
 import { PaymentCancelPage } from "./pages/PaymentCancelPage";
@@ -17,6 +18,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<Layout />}>
         <Route path="home" element={<HomePage />} />

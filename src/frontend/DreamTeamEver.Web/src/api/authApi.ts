@@ -224,6 +224,64 @@ export async function signOutRequest(accessToken: string): Promise<boolean> {
   return res.ok || res.status === 204
 }
 
+export async function forgotPasswordRequest(
+  email: string,
+): Promise<{ ok: true } | { ok: false; status: number; message?: string }> {
+  const res = await fetch(apiUrl('/api/auth/forgot-password'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim() }),
+  })
+
+  if (res.ok || res.status === 204) {
+    return { ok: true }
+  }
+
+  const body = (await readJson(res)) as { error?: string; message?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message:
+      typeof body?.message === 'string'
+        ? body.message
+        : typeof body?.error === 'string'
+          ? body.error
+          : undefined,
+  }
+}
+
+export async function resetPasswordRequest(
+  email: string,
+  token: string,
+  newPassword: string,
+): Promise<{ ok: true } | { ok: false; status: number; message?: string }> {
+  const res = await fetch(apiUrl('/api/auth/reset-password'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email.trim(),
+      token: token.trim(),
+      newPassword,
+    }),
+  })
+
+  if (res.ok || res.status === 204) {
+    return { ok: true }
+  }
+
+  const body = (await readJson(res)) as { error?: string; message?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message:
+      typeof body?.message === 'string'
+        ? body.message
+        : typeof body?.error === 'string'
+          ? body.error
+          : undefined,
+  }
+}
+
 export async function fetchMyPayments(
   accessToken: string,
 ): Promise<

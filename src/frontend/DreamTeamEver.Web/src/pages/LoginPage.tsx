@@ -117,6 +117,11 @@ export function LoginPage() {
             required
           />
           {fieldErrors.password ? <p className="mt-1 text-xs text-red-700">{fieldErrors.password}</p> : null}
+          <p className="mt-2 text-right text-sm">
+            <Link to="/forgot-password" className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline dark:text-amber-300 dark:hover:text-amber-200">
+              Have you forget your password?
+            </Link>
+          </p>
         </div>
 
         {error ? (
