@@ -8,7 +8,6 @@ export function HomePage() {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const matriculeDisplay = user?.matriculeCode?.trim() || "—";
-  const phoneDisplay = user?.phone?.trim() || "—";
 
   useEffect(() => {
     if (isAdmin) {

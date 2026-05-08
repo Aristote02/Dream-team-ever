@@ -4,7 +4,6 @@ using DreamTeamEver.Domain.Options;
 using DreamTeamEver.ServiceDefaults;
 using FastEndpoints;
 using FastEndpoints.Swagger;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
 using NSwag.AspNetCore;
 using System.Text.Json;
@@ -53,12 +52,7 @@ public static class WebApplicationExtensions
 
         app.UseForwardedHeaders();
         app.UseCors(DreamTeamEverCorsExtensions.AllowAllPolicy);
-
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseHttpsRedirection();
-        }
-
+        
         app.UseExceptionHandler();
         app.UseProblemDetailsForStatusCodes();
 
