@@ -21,22 +21,17 @@ public sealed class VerifyMatriculeEndpoint : Endpoint<VerifyMatriculeRequest, M
     {
         if (string.IsNullOrWhiteSpace(req.Code))
         {
-            await Send.OkAsync(new MatriculeVerificationDto(false, null, null));
+            await Send.OkAsync(new MatriculeVerificationDto(false, null, null), ct);
             return;
         }
 
         var member = await _matricules.FindByMatriculeAsync(req.Code, ct);
         if (member is null)
         {
-            await Send.OkAsync(new MatriculeVerificationDto(false, null, null));
+            await Send.OkAsync(new MatriculeVerificationDto(false, null, null), ct);
             return;
         }
 
-        await Send.OkAsync(new MatriculeVerificationDto(true, member.FullName, member.MatriculeIssuedAt));
+        await Send.OkAsync(new MatriculeVerificationDto(true, member.FullName, member.MatriculeIssuedAt), ct);
     }
-}
-
-public sealed class VerifyMatriculeRequest
-{
-    public string? Code { get; set; }
 }

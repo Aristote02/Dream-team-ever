@@ -3,9 +3,8 @@ using DreamTeamEver.Api.Common;
 using DreamTeamEver.Application.Mapping;
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Dtos;
+using DreamTeamEver.Domain.Enums;
 using FastEndpoints;
-using Microsoft.AspNetCore.Http;
-
 namespace DreamTeamEver.Api.Features.Payments.InitiatePayment;
 
 public sealed class InitiatePaymentEndpoint : Endpoint<InitiatePaymentRequest, PaymentTransactionDto>
@@ -17,7 +16,7 @@ public sealed class InitiatePaymentEndpoint : Endpoint<InitiatePaymentRequest, P
     public override void Configure()
     {
         Post("/api/payments/initiate");
-        Roles("Member");
+        Roles(nameof(UserRole.Member));
         Summary(s => s.Description = "Start a registration payment (must match your member profile). Mpesa integration TBD.");
     }
 
@@ -26,16 +25,16 @@ public sealed class InitiatePaymentEndpoint : Endpoint<InitiatePaymentRequest, P
         var ownMemberId = User.GetMemberId();
         if (ownMemberId != req.MemberId)
         {
-            await Send.ForbiddenAsync();
+            await Send.ForbiddenAsync(ct);
+            
             return;
         }
 
         var tx = await _payments.InitiateAsync(req.MemberId, req.Method, ct);
         if (tx is null)
         {
-            await Send.ResultAsync(
-                Results.Json(new { error = ApiErrorMessages.PaymentInitFailed },
-                    statusCode: StatusCodes.Status400BadRequest));
+            await Send.ResultAsync(Results.Json(new { error = ApiErrorMessages.PaymentInitFailed }, statusCode: StatusCodes.Status400BadRequest));
+            
             return;
         }
 

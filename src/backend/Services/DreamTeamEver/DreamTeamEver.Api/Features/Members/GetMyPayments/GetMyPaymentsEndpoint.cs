@@ -24,6 +24,7 @@ public sealed class GetMyPaymentsEndpoint : EndpointWithoutRequest<List<PaymentT
     {
         var userId = User.GetUserId();
         var rows = await _payments.ListTransactionsByUserAsync(userId, ct);
+        
         await Send.OkAsync([.. rows.Select(x => x.ToPaymentDto())], ct);
     }
 }

@@ -18,6 +18,6 @@ public sealed class GetMembersEndpoint : EndpointWithoutRequest<List<MemberSumma
     public override async Task HandleAsync(CancellationToken ct)
     {
         var list = await _admin.GetAllMembersAsync(ct);
-        await Send.OkAsync(list.ToList());
+        await Send.OkAsync(list.ToList(), ct);
     }
 }

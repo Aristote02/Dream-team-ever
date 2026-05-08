@@ -21,6 +21,8 @@ public sealed class AuthService : IAuthService
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IJwtTokenGenerator _jwt;
     private readonly ITokenBlacklistService _blacklist;
+    private readonly IEmailNotificationService _emailNotifications;
+    private readonly IRequestContextAccessor _requestContextAccessor;
     private readonly JwtOptions _jwtOptions;
     private readonly ILogger<AuthService> _logger;
     private readonly IHostEnvironment _env;
@@ -32,6 +34,8 @@ public sealed class AuthService : IAuthService
         IPasswordHasher<User> passwordHasher,
         IJwtTokenGenerator jwt,
         ITokenBlacklistService blacklist,
+        IEmailNotificationService emailNotifications,
+        IRequestContextAccessor requestContextAccessor,
         IOptions<JwtOptions> jwtOptions,
         ILogger<AuthService> logger,
         IHostEnvironment env)
@@ -42,6 +46,8 @@ public sealed class AuthService : IAuthService
         _passwordHasher = passwordHasher;
         _jwt = jwt;
         _blacklist = blacklist;
+        _emailNotifications = emailNotifications;
+        _requestContextAccessor = requestContextAccessor;
         _jwtOptions = jwtOptions.Value;
         _logger = logger;
         _env = env;
@@ -79,6 +85,7 @@ public sealed class AuthService : IAuthService
         await _members.AddAsync(member, cancellationToken);
         await _users.SaveChangesAsync(cancellationToken);
 
+        await NotifyWelcomeAsync(user, member, cancellationToken);
         return await IssueTokensAsync(user, member, cancellationToken);
     }
 
@@ -98,7 +105,10 @@ public sealed class AuthService : IAuthService
             return null;
         }
 
-        return await IssueTokensAsync(user, user.MemberProfile, cancellationToken);
+        var authResponse = await IssueTokensAsync(user, user.MemberProfile, cancellationToken);
+        await NotifyLoginAsync(user, user.MemberProfile, cancellationToken);
+
+        return authResponse;
     }
 
     public async Task<AuthResponse?> RefreshAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default)
@@ -144,6 +154,8 @@ public sealed class AuthService : IAuthService
         user.PasswordResetExpiresAt = DateTimeOffset.UtcNow.AddHours(1);
         await _users.SaveChangesAsync(cancellationToken);
 
+        await NotifyPasswordResetAsync(user, plain, user.PasswordResetExpiresAt.Value, cancellationToken);
+
         if (_env.IsDevelopment())
         {
             _logger.LogWarning(
@@ -184,6 +196,7 @@ public sealed class AuthService : IAuthService
         }
 
         await _users.SaveChangesAsync(cancellationToken);
+        await NotifyPasswordChangedAsync(user, cancellationToken);
         return true;
     }
 
@@ -218,6 +231,68 @@ public sealed class AuthService : IAuthService
             member?.Id,
             member?.Phone,
             member?.MatriculeCode);
+    }
+
+    private async Task NotifyLoginAsync(User user, Member? member, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var ctx = _requestContextAccessor.GetCurrent();
+            var notification = new LoginAlertNotification(
+                user.Email,
+                member?.FullName,
+                string.IsNullOrWhiteSpace(ctx.IpAddress) ? "Unknown" : ctx.IpAddress,
+                string.IsNullOrWhiteSpace(ctx.UserAgent) ? "Unknown" : ctx.UserAgent,
+                DateTimeOffset.UtcNow);
+
+            await _emailNotifications.SendLoginAlertAsync(notification, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Login alert email failed for {Email}.", user.Email);
+        }
+    }
+
+    private async Task NotifyWelcomeAsync(User user, Member? member, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _emailNotifications.SendWelcomeAsync(
+                new WelcomeNotification(user.Email, member?.FullName),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Welcome email failed for {Email}.", user.Email);
+        }
+    }
+
+    private async Task NotifyPasswordResetAsync(User user, string plainToken, DateTimeOffset expiresAtUtc, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _emailNotifications.SendPasswordResetAsync(
+                new PasswordResetNotification(user.Email, user.MemberProfile?.FullName, plainToken, expiresAtUtc),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Password reset email failed for {Email}.", user.Email);
+        }
+    }
+
+    private async Task NotifyPasswordChangedAsync(User user, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _emailNotifications.SendPasswordChangedAsync(
+                new PasswordChangedNotification(user.Email, user.MemberProfile?.FullName, DateTimeOffset.UtcNow),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Password changed email failed for {Email}.", user.Email);
+        }
     }
 
     private static bool FixedTimeHexEquals(string aHex, string bHex)

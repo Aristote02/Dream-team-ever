@@ -10,7 +10,7 @@ public class User
 
     public string PasswordHash { get; set; } = string.Empty;
 
-    public UserRole Role { get; init; }
+    public UserRole Role { get; set; }
 
     public DateTimeOffset CreatedAt { get; init; }
 

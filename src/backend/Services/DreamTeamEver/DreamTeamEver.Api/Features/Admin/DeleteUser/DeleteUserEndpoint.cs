@@ -1,4 +1,5 @@
 using DreamTeamEver.Application.Abstractions;
+using DreamTeamEver.Domain.Enums;
 using FastEndpoints;
 
 namespace DreamTeamEver.Api.Features.Admin.DeleteUser;
@@ -12,7 +13,7 @@ public sealed class DeleteUserEndpoint : Endpoint<DeleteUserRequest>
     public override void Configure()
     {
         Delete("/api/admin/users/{UserId}");
-        Roles("Admin");
+        Roles(nameof(UserRole.Admin));
     }
 
     public override async Task HandleAsync(DeleteUserRequest req, CancellationToken ct)
@@ -20,12 +21,10 @@ public sealed class DeleteUserEndpoint : Endpoint<DeleteUserRequest>
         var ok = await _admin.DeleteUserAsync(req.UserId, ct);
         if (!ok)
         {
-            await Send.NotFoundAsync();
+            await Send.NotFoundAsync(ct);
             return;
         }
 
-        await Send.NoContentAsync();
+        await Send.NoContentAsync(ct);
     }
 }
-
-public sealed record DeleteUserRequest(Guid UserId);

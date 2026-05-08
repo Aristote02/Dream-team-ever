@@ -2,6 +2,7 @@ using DreamTeamEver.Api.Authorization;
 using DreamTeamEver.Application.Mapping;
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Dtos;
+using DreamTeamEver.Domain.Enums;
 using FastEndpoints;
 
 namespace DreamTeamEver.Api.Features.Payments.GetPaymentById;
@@ -22,31 +23,29 @@ public sealed class GetPaymentByIdEndpoint : Endpoint<GetPaymentByIdRequest, Pay
         var tx = await _payments.GetTransactionAsync(req.Id, ct);
         if (tx is null)
         {
-            await Send.NotFoundAsync();
+            await Send.NotFoundAsync(ct);
             return;
         }
 
-        if (User.IsInRole("Admin"))
+        if (User.IsInRole(nameof(UserRole.Admin)))
         {
-            await Send.OkAsync(tx.ToPaymentDto());
+            await Send.OkAsync(tx.ToPaymentDto(), ct);
             return;
         }
 
-        if (User.IsInRole("Member"))
+        if (User.IsInRole(nameof(UserRole.Member)))
         {
             var ownMemberId = User.GetMemberId();
             if (ownMemberId != tx.MemberId)
             {
-                await Send.ForbiddenAsync();
+                await Send.ForbiddenAsync(ct);
                 return;
             }
 
-            await Send.OkAsync(tx.ToPaymentDto());
+            await Send.OkAsync(tx.ToPaymentDto(), ct);
             return;
         }
 
-        await Send.ForbiddenAsync();
+        await Send.ForbiddenAsync(ct);
     }
 }
-
-public sealed record GetPaymentByIdRequest(Guid Id);
