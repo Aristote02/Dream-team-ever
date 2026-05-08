@@ -14,6 +14,7 @@ public sealed record EmailNotificationOptions : IDreamTeamEverOptions
     public string SmtpPassword { get; init; } = string.Empty;
     public string SenderEmail { get; init; } = string.Empty;
     public string SenderName { get; init; } = EmailDefaults.SenderName;
+    public string LogoUrl { get; init; } = EmailDefaults.LogoUrl;
     public string FrontendBaseUrl { get; init; } = string.Empty;
     public string ResetPasswordPath { get; init; } = EmailDefaults.ResetPasswordPath;
     public string WelcomeSubject { get; init; } = EmailDefaults.WelcomeSubject;

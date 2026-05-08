@@ -1,11 +1,11 @@
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Dtos;
-using DreamTeamEver.Domain.Constants;
 using DreamTeamEver.Domain.Options;
 using DreamTeamEver.Infrastructure.Email.Rendering;
 using DreamTeamEver.Infrastructure.Email.Sending;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TemplateNames = DreamTeamEver.Domain.Constants.EmailTemplateNames;
 
 namespace DreamTeamEver.Infrastructure.Email.Services;
 
@@ -37,10 +37,10 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.Welcome, new
+        var html = _renderer.Render(TemplateNames.Welcome, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.WelcomeSubject, html, "Welcome", cancellationToken);
@@ -53,12 +53,12 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.PasswordReset, new
+        var html = _renderer.Render(TemplateNames.PasswordReset, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
             resetLink = BuildResetLink(notification.ResetToken, notification.RecipientEmail),
             expiresAtUtc = FormatUtc(notification.ExpiresAtUtc),
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.PasswordResetSubject, html, "Password reset", cancellationToken);
@@ -71,11 +71,11 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.PasswordChanged, new
+        var html = _renderer.Render(TemplateNames.PasswordChanged, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
             changedAtUtc = FormatUtc(notification.ChangedAtUtc),
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.PasswordChangedSubject, html, "Password changed", cancellationToken);
@@ -88,13 +88,13 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.LoginAlert, new
+        var html = _renderer.Render(TemplateNames.LoginAlert, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
             ipAddress = notification.IpAddress,
             userAgent = notification.UserAgent,
             loggedInAtUtc = FormatUtc(notification.LoggedInAtUtc),
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.LoginAlertSubject, html, "Login alert", cancellationToken);
@@ -107,14 +107,14 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.PaymentConfirmed, new
+        var html = _renderer.Render(TemplateNames.PaymentConfirmed, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
             amount = notification.Amount.ToString("0.00"),
             currency = notification.Currency,
             confirmedAtUtc = FormatUtc(notification.ConfirmedAtUtc),
             providerReference = string.IsNullOrWhiteSpace(notification.ProviderReference) ? "N/A" : notification.ProviderReference,
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.PaymentConfirmedSubject, html, "Payment confirmed", cancellationToken);
@@ -127,12 +127,12 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.MatriculeIssued, new
+        var html = _renderer.Render(TemplateNames.MatriculeIssued, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
             matriculeCode = notification.MatriculeCode,
             issuedAtUtc = FormatUtc(notification.IssuedAtUtc),
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.MatriculeIssuedSubject, html, "Matricule issued", cancellationToken);
@@ -145,11 +145,11 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.AccountDeleted, new
+        var html = _renderer.Render(TemplateNames.AccountDeleted, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
             deletedAtUtc = FormatUtc(notification.DeletedAtUtc),
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.AccountDeletedSubject, html, "Account deleted", cancellationToken);
@@ -162,12 +162,12 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.RoleChanged, new
+        var html = _renderer.Render(TemplateNames.RoleChanged, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
             newRole = notification.NewRole,
             changedAtUtc = FormatUtc(notification.ChangedAtUtc),
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.RoleChangedSubject, html, "Role changed", cancellationToken);
@@ -180,14 +180,14 @@ internal sealed class EmailNotificationService : IEmailNotificationService
             return;
         }
 
-        var html = _renderer.Render(EmailTemplateNames.PendingPaymentReminder, new
+        var html = _renderer.Render(TemplateNames.PendingPaymentReminder, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
             amount = notification.Amount.ToString("0.00"),
             currency = notification.Currency,
             createdAtUtc = FormatUtc(notification.CreatedAtUtc),
             providerReference = string.IsNullOrWhiteSpace(notification.ProviderReference) ? "N/A" : notification.ProviderReference,
-            logoSvgDataUri = _logoDataUri.Value
+            logoSvgDataUri = GetLogoImageSource()
         });
 
         await SendAndLogAsync(notification.RecipientEmail, _options.PendingPaymentReminderSubject, html, "Pending payment reminder", cancellationToken);
@@ -208,6 +208,16 @@ internal sealed class EmailNotificationService : IEmailNotificationService
 
     private static string NameOrDefault(string? recipientName) => string.IsNullOrWhiteSpace(recipientName) ? "there" : recipientName;
     private static string FormatUtc(DateTimeOffset ts) => ts.ToString("yyyy-MM-dd HH:mm 'UTC'");
+
+    private string GetLogoImageSource()
+    {
+        if (!string.IsNullOrWhiteSpace(_options.LogoUrl))
+        {
+            return _options.LogoUrl;
+        }
+
+        return _logoDataUri.Value;
+    }
 
     private static string LoadLogoDataUri()
     {

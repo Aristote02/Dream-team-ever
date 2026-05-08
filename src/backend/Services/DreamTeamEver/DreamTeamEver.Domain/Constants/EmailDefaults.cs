@@ -3,6 +3,7 @@ namespace DreamTeamEver.Domain.Constants;
 public static class EmailDefaults
 {
     public const string SenderName = "Dream Team Ever";
+    public const string LogoUrl = "";
     public const string ResetPasswordPath = "/reset-password";
 
     public const string WelcomeSubject = "Welcome to Dream Team Ever";
@@ -16,7 +17,7 @@ public static class EmailDefaults
     public const string PendingPaymentReminderSubject = "Complete your pending payment";
 
     public const int SmtpPort = 587;
-    public const bool UseSsl = true;
+    public const bool UseSsl = false;
     public const bool EnablePendingPaymentReminders = false;
     public const int PendingReminderMinAgeHours = 24;
     public const int PendingReminderWindowMinutes = 60;
