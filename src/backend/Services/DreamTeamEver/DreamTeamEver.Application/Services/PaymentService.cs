@@ -2,6 +2,7 @@ using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Abstractions.Repositories;
 using DreamTeamEver.Application.Common;
 using DreamTeamEver.Application.Configuration;
+using DreamTeamEver.Application.Dtos;
 using DreamTeamEver.Domain.Entities;
 using DreamTeamEver.Domain.Enums;
 using Microsoft.Extensions.Options;
@@ -13,17 +14,20 @@ public sealed class PaymentService : IPaymentService
     private readonly IMemberRepository _members;
     private readonly IPaymentTransactionRepository _payments;
     private readonly IMatriculeService _matricules;
+    private readonly IEmailNotificationService _emailNotifications;
     private readonly DreamTeamEverOptions _options;
 
     public PaymentService(
         IMemberRepository members,
         IPaymentTransactionRepository payments,
         IMatriculeService matricules,
+        IEmailNotificationService emailNotifications,
         IOptions<DreamTeamEverOptions> options)
     {
         _members = members;
         _payments = payments;
         _matricules = matricules;
+        _emailNotifications = emailNotifications;
         _options = options.Value;
     }
 
@@ -97,6 +101,63 @@ public sealed class PaymentService : IPaymentService
         }
 
         await dbTx.CommitAsync(cancellationToken);
+
+        await NotifyPaymentConfirmedAsync(payment, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(matricule))
+        {
+            await NotifyMatriculeIssuedAsync(payment, matricule!, cancellationToken);
+        }
+
         return new PaymentResult(true, matricule, null);
+    }
+
+    private async Task NotifyPaymentConfirmedAsync(PaymentTransaction payment, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var email = payment.Member.User?.Email;
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return;
+            }
+
+            await _emailNotifications.SendPaymentConfirmedAsync(
+                new PaymentConfirmedNotification(
+                    email,
+                    payment.Member.FullName,
+                    payment.Amount,
+                    payment.Currency,
+                    payment.CompletedAt ?? DateTimeOffset.UtcNow,
+                    payment.ProviderReference),
+                cancellationToken);
+        }
+        catch
+        {
+            // Do not break payment success for email failures.
+        }
+    }
+
+    private async Task NotifyMatriculeIssuedAsync(PaymentTransaction payment, string matriculeCode, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var email = payment.Member.User?.Email;
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return;
+            }
+
+            await _emailNotifications.SendMatriculeIssuedAsync(
+                new MatriculeIssuedNotification(
+                    email,
+                    payment.Member.FullName,
+                    matriculeCode,
+                    DateTimeOffset.UtcNow),
+                cancellationToken);
+        }
+        catch
+        {
+            // Do not break payment success for email failures.
+        }
     }
 }

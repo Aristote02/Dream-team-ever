@@ -21,6 +21,7 @@ public sealed class PaymentTransactionRepository : Repository<PaymentTransaction
     public Task<PaymentTransaction?> GetByIdWithMemberAsync(Guid id, CancellationToken cancellationToken) =>
         Query()
             .Include(p => p.Member)
+            .ThenInclude(m => m.User)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
     public Task<List<PaymentTransaction>> GetAllCreatedDescAsync(CancellationToken cancellationToken) =>
@@ -34,5 +35,15 @@ public sealed class PaymentTransactionRepository : Repository<PaymentTransaction
             .Include(p => p.Member)
             .Where(p => p.Member.UserId == userId)
             .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+    public Task<List<PaymentTransaction>> ListPendingCreatedBetweenWithMemberUserAsync(
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        CancellationToken cancellationToken) =>
+        Query().AsNoTracking()
+            .Include(p => p.Member)
+            .ThenInclude(m => m.User)
+            .Where(p => p.Status == PaymentStatus.Pending && p.CreatedAt >= fromUtc && p.CreatedAt < toUtc)
             .ToListAsync(cancellationToken);
 }

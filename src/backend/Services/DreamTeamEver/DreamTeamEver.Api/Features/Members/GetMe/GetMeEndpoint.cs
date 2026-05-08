@@ -24,10 +24,10 @@ public sealed class GetMeEndpoint : EndpointWithoutRequest<MemberDto>
         var member = await _members.GetByUserIdAsync(userId, ct);
         if (member is null)
         {
-            await Send.NotFoundAsync();
+            await Send.NotFoundAsync(ct);
             return;
         }
 
-        await Send.OkAsync(member.ToMemberDto());
+        await Send.OkAsync(member.ToMemberDto(), ct);
     }
 }

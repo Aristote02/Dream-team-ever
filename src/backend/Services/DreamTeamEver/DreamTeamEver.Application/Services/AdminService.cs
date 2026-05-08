@@ -2,6 +2,7 @@ using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Abstractions.Repositories;
 using DreamTeamEver.Application.Dtos;
 using DreamTeamEver.Domain.Contracts.Pagination;
+using DreamTeamEver.Domain.Enums;
 using Mapster;
 
 namespace DreamTeamEver.Application.Services;
@@ -11,15 +12,18 @@ public sealed class AdminService : IAdminService
     private readonly IUserRepository _users;
     private readonly IMemberRepository _members;
     private readonly IPaymentTransactionRepository _payments;
+    private readonly IEmailNotificationService _emailNotifications;
 
     public AdminService(
         IUserRepository users,
         IMemberRepository members,
-        IPaymentTransactionRepository payments)
+        IPaymentTransactionRepository payments,
+        IEmailNotificationService emailNotifications)
     {
         _users = users;
         _members = members;
         _payments = payments;
+        _emailNotifications = emailNotifications;
     }
 
     public async Task<IReadOnlyList<UserAccountDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
@@ -74,12 +78,57 @@ public sealed class AdminService : IAdminService
 
     public async Task<bool> DeleteUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var user = await _users.GetByIdTrackedAsync(userId, cancellationToken);
+        var user = await _users.GetByIdWithMemberProfileTrackedAsync(userId, cancellationToken);
         if (user is null)
             return false;
 
+        var email = user.Email;
+        var fullName = user.MemberProfile?.FullName;
+
         await _users.DeleteAsync(user, cancellationToken);
         await _users.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await _emailNotifications.SendAccountDeletedAsync(
+                new AccountDeletedNotification(email, fullName, DateTimeOffset.UtcNow),
+                cancellationToken);
+        }
+        catch
+        {
+            // Deletion should not fail due to email issues.
+        }
+
+        return true;
+    }
+
+    public async Task<bool> ChangeUserRoleAsync(Guid userId, UserRole role, CancellationToken cancellationToken = default)
+    {
+        var user = await _users.GetByIdWithMemberProfileTrackedAsync(userId, cancellationToken);
+        if (user is null)
+            return false;
+
+        if (user.Role == role)
+            return true;
+
+        user.Role = role;
+        await _users.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await _emailNotifications.SendRoleChangedAsync(
+                new RoleChangedNotification(
+                    user.Email,
+                    user.MemberProfile?.FullName,
+                    role.ToString(),
+                    DateTimeOffset.UtcNow),
+                cancellationToken);
+        }
+        catch
+        {
+            // Role update should not fail due to email issues.
+        }
+
         return true;
     }
 }
