@@ -52,27 +52,27 @@ export function HistoricsPage() {
           {rows.map((row) => (
             <li
               key={row.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-stone-200/80 bg-white p-4 shadow-sm ring-1 ring-stone-100"
+              className="flex items-center justify-between gap-3 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 p-4 text-white shadow-lg ring-1 ring-amber-400/30"
             >
               <div>
-                <p className="font-medium text-stone-900">
+                <p className="font-medium text-white">
                   {row.method} payment
                 </p>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-amber-100/90">
                   {new Date(row.createdAt).toLocaleDateString()}
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-stone-800">
+                <p className="font-semibold text-white">
                   {formatAmount(row.amount, row.currency)}
                 </p>
                 <p
                   className={
                     row.status === 'Pending'
-                      ? 'text-xs font-medium text-amber-700'
+                      ? 'text-xs font-medium text-amber-100'
                       : row.status === 'Completed'
-                        ? 'text-xs text-emerald-700'
-                        : 'text-xs text-rose-700'
+                        ? 'text-xs text-emerald-200'
+                        : 'text-xs text-rose-200'
                   }
                 >
                   {row.status}
