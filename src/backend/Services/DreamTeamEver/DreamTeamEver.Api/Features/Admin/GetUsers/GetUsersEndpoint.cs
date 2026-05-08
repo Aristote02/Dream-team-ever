@@ -1,5 +1,6 @@
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Dtos;
+using DreamTeamEver.Domain.Enums;
 using FastEndpoints;
 
 namespace DreamTeamEver.Api.Features.Admin.GetUsers;
@@ -13,12 +14,12 @@ public sealed class GetUsersEndpoint : EndpointWithoutRequest<List<UserAccountDt
     public override void Configure()
     {
         Get("/api/admin/users");
-        Roles("Admin");
+        Roles(nameof(UserRole.Admin));
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
         var list = await _admin.GetAllUsersAsync(ct);
-        await Send.OkAsync(list.ToList());
+        await Send.OkAsync(list.ToList(), ct);
     }
 }

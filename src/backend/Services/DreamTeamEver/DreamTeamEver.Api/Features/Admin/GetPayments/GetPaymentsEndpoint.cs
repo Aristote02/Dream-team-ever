@@ -19,6 +19,6 @@ public sealed class GetPaymentsEndpoint : Endpoint<GetAllPaymentsRequest, PagedR
     public override async Task HandleAsync(GetAllPaymentsRequest req, CancellationToken ct)
     {
         var page = await _admin.GetPaymentsPagedAsync(req.PageNumber, req.PageSize, ct);
-        await Send.OkAsync(page);
+        await Send.OkAsync(page, ct);
     }
 }

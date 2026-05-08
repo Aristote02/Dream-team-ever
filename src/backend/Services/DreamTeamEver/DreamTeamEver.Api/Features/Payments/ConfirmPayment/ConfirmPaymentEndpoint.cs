@@ -4,8 +4,8 @@ using DreamTeamEver.Application.Mapping;
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Configuration;
 using DreamTeamEver.Application.Dtos;
+using DreamTeamEver.Domain.Enums;
 using FastEndpoints;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace DreamTeamEver.Api.Features.Payments.ConfirmPayment;
@@ -37,31 +37,32 @@ public sealed class ConfirmPaymentEndpoint : Endpoint<ConfirmPaymentRequest, Pay
     {
         if (!(_options.AllowPaymentSimulation || _env.IsDevelopment()))
         {
-            await Send.ResultAsync(
-                Results.Json(new { error = ApiErrorMessages.PaymentSimulationDisabled },
-                    statusCode: StatusCodes.Status403Forbidden));
+            await Send.ResultAsync(Results.Json(new { error = ApiErrorMessages.PaymentSimulationDisabled }, statusCode: StatusCodes.Status403Forbidden));
+            
             return;
         }
 
         var tx = await _payments.GetTransactionAsync(req.Id, ct);
         if (tx is null)
         {
-            await Send.NotFoundAsync();
+            await Send.NotFoundAsync(ct);
             return;
         }
 
-        if (!User.IsInRole("Admin"))
+        if (!User.IsInRole(nameof(UserRole.Admin)))
         {
-            if (!User.IsInRole("Member"))
+            if (!User.IsInRole(nameof(UserRole.Member)))
             {
-                await Send.ForbiddenAsync();
+                await Send.ForbiddenAsync(ct);
+                
                 return;
             }
 
             var ownMemberId = User.GetMemberId();
             if (ownMemberId != tx.MemberId)
             {
-                await Send.ForbiddenAsync();
+                await Send.ForbiddenAsync(ct);
+                
                 return;
             }
         }
@@ -69,8 +70,8 @@ public sealed class ConfirmPaymentEndpoint : Endpoint<ConfirmPaymentRequest, Pay
         var result = await _payments.ConfirmAsync(req.Id, ct);
         if (!result.Success)
         {
-            await Send.ResultAsync(
-                Results.Json(new { error = result.Error }, statusCode: StatusCodes.Status400BadRequest));
+            await Send.ResultAsync(Results.Json(new { error = result.Error }, statusCode: StatusCodes.Status400BadRequest));
+            
             return;
         }
 
@@ -78,5 +79,3 @@ public sealed class ConfirmPaymentEndpoint : Endpoint<ConfirmPaymentRequest, Pay
         await Send.OkAsync(new PaymentConfirmationDto(result.MatriculeCode, updated?.ToPaymentDto()), ct);
     }
 }
-
-public sealed record ConfirmPaymentRequest(Guid Id);

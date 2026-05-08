@@ -14,6 +14,7 @@ public interface IUserRepository : IRepository<User>
     Task<User?> GetByEmailTrackedAsync(string email, CancellationToken cancellationToken = default);
 
     Task<User?> GetByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<User?> GetByIdWithMemberProfileTrackedAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<List<User>> GetAllWithMemberProfileCreatedDescAsync(CancellationToken cancellationToken = default);
 }

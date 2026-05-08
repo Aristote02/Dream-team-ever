@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#f6f7fb;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7fb;padding:24px 12px;">
+      <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;">
+          <tr><td style="padding:24px;text-align:center;background:#fff7ed;border-bottom:1px solid #ffedd5;">
+            {{#logoSvgDataUri}}<img src="{{logoSvgDataUri}}" alt="Dream Team Ever" width="72" height="72" style="display:block;margin:0 auto 12px auto;" />{{/logoSvgDataUri}}
+            <h1 style="margin:0;font-size:20px;">Your matricule is ready</h1>
+          </td></tr>
+          <tr><td style="padding:24px;">
+            <p style="margin:0 0 10px 0;">Hi {{recipientName}},</p>
+            <p style="margin:0 0 10px 0;">Your matricule code has been issued at <strong>{{issuedAtUtc}}</strong>.</p>
+            <p style="margin:0;font-size:18px;"><strong>{{matriculeCode}}</strong></p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>

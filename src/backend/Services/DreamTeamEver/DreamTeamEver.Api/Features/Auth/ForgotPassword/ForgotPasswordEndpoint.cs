@@ -5,7 +5,7 @@ using FastEndpoints;
 namespace DreamTeamEver.Api.Features.Auth.ForgotPassword;
 
 /// <summary>
-/// Always returns 204 when the request is valid — does not reveal whether the email exists.
+/// Always returns 204 when the request is valid, does not reveal whether the email exists.
 /// In Development, the reset token is logged (replace with email delivery in production).
 /// </summary>
 public sealed class ForgotPasswordEndpoint : Endpoint<ForgotPasswordRequest>

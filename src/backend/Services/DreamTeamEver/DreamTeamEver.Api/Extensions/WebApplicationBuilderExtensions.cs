@@ -1,8 +1,10 @@
 using DreamTeamEver.Api;
 using DreamTeamEver.Api.Configuration;
 using DreamTeamEver.Api.Hosting;
+using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.DI;
 using DreamTeamEver.Domain.Options;
+using DreamTeamEver.Domain.Options.Validators;
 using DreamTeamEver.Infrastructure;
 using DreamTeamEver.Infrastructure.Data;
 using DreamTeamEver.ServiceDefaults;
@@ -10,6 +12,7 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using FluentValidation;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Options;
 
 namespace DreamTeamEver.Api.Extensions;
 
@@ -24,6 +27,10 @@ public static class WebApplicationBuilderExtensions
         var configuration = builder.Configuration;
 
         services.AddOptionsWithBaseValidationOnStart<ConnectionStringsOptions>(configuration, x => x.DreamTeamEverDbConnectionString);
+        services.AddOptions<EmailNotificationOptions>()
+            .Bind(configuration.GetSection(EmailNotificationOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<EmailNotificationOptions>, EmailNotificationOptionsValidator>();
         services.Configure<AuthOptions>(configuration.GetSection(AuthOptions.SectionName));
 
         _ = configuration.GetSection(ConnectionStringsOptions.SectionName).Get<ConnectionStringsOptions>()
@@ -55,7 +62,10 @@ public static class WebApplicationBuilderExtensions
             .ConfigureSwagger(configuration)
             .AddHttpContextAccessor();
 
+        services.AddScoped<IRequestContextAccessor, HttpRequestContextAccessor>();
+
         services.AddHostedService<AdminSeedHostedService>();
+        services.AddHostedService<PendingPaymentReminderHostedService>();
 
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();

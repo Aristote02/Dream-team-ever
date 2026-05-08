@@ -29,6 +29,11 @@ public sealed class UserRepository : Repository<User>, IUserRepository
     public Task<User?> GetByIdTrackedAsync(Guid id, CancellationToken cancellationToken) =>
         Query().FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
+    public Task<User?> GetByIdWithMemberProfileTrackedAsync(Guid id, CancellationToken cancellationToken) =>
+        Query()
+            .Include(u => u.MemberProfile)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
     public Task<List<User>> GetAllWithMemberProfileCreatedDescAsync(CancellationToken cancellationToken) =>
         Query().AsNoTracking()
             .Include(u => u.MemberProfile)

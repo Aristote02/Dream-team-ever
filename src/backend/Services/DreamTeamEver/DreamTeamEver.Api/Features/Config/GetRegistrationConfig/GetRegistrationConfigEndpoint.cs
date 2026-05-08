@@ -21,6 +21,6 @@ public sealed class GetRegistrationConfigEndpoint : EndpointWithoutRequest<Regis
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        await Send.OkAsync(new RegistrationConfigDto(_options.RegistrationFee, _options.Currency));
+        await Send.OkAsync(new RegistrationConfigDto(_options.RegistrationFee, _options.Currency), ct);
     }
 }

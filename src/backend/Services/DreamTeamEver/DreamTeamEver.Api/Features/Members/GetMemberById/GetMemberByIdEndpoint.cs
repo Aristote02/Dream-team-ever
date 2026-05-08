@@ -2,6 +2,7 @@ using DreamTeamEver.Api.Authorization;
 using DreamTeamEver.Application.Mapping;
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Dtos;
+using DreamTeamEver.Domain.Enums;
 using FastEndpoints;
 
 namespace DreamTeamEver.Api.Features.Members.GetMemberById;
@@ -22,31 +23,29 @@ public sealed class GetMemberByIdEndpoint : Endpoint<GetMemberByIdRequest, Membe
         var member = await _members.GetByIdAsync(req.Id, ct);
         if (member is null)
         {
-            await Send.NotFoundAsync();
+            await Send.NotFoundAsync(ct);
             return;
         }
 
-        if (User.IsInRole("Admin"))
+        if (User.IsInRole(nameof(UserRole.Admin)))
         {
-            await Send.OkAsync(member.ToMemberDto());
+            await Send.OkAsync(member.ToMemberDto(), ct);
             return;
         }
 
-        if (User.IsInRole("Member"))
+        if (User.IsInRole(nameof(UserRole.Member)))
         {
             var ownId = User.GetMemberId();
             if (ownId != req.Id)
             {
-                await Send.ForbiddenAsync();
+                await Send.ForbiddenAsync(ct);
                 return;
             }
 
-            await Send.OkAsync(member.ToMemberDto());
+            await Send.OkAsync(member.ToMemberDto(), ct);
             return;
         }
 
-        await Send.ForbiddenAsync();
+        await Send.ForbiddenAsync(ct);
     }
 }
-
-public sealed record GetMemberByIdRequest(Guid Id);
