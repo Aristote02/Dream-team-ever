@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using DreamTeamEver.Application.Abstractions;
-using DreamTeamEver.Domain.Options;
 using DreamTeamEver.Infrastructure.Services;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
@@ -21,11 +20,7 @@ public static class DreamTeamEverCachingExtensions
     {
         services.AddMemoryCache();
 
-        var redisConn = configuration
-            .GetSection(ConnectionStringsOptions.SectionName)
-            .Get<ConnectionStringsOptions>()
-            ?.RedisConnectionString?
-            .Trim();
+        var redisConn = RedisConnectionStringResolver.Resolve(configuration);
 
         if (string.IsNullOrWhiteSpace(redisConn))
         {

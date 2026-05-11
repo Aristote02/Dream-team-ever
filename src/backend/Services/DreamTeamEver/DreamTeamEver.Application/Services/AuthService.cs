@@ -7,6 +7,7 @@ using DreamTeamEver.Application.Security;
 using DreamTeamEver.Domain.Entities;
 using DreamTeamEver.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,8 +22,8 @@ public sealed class AuthService : IAuthService
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IJwtTokenGenerator _jwt;
     private readonly ITokenBlacklistService _blacklist;
-    private readonly IEmailNotificationService _emailNotifications;
     private readonly IRequestContextAccessor _requestContextAccessor;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly JwtOptions _jwtOptions;
     private readonly ILogger<AuthService> _logger;
     private readonly IHostEnvironment _env;
@@ -34,8 +35,8 @@ public sealed class AuthService : IAuthService
         IPasswordHasher<User> passwordHasher,
         IJwtTokenGenerator jwt,
         ITokenBlacklistService blacklist,
-        IEmailNotificationService emailNotifications,
         IRequestContextAccessor requestContextAccessor,
+        IServiceScopeFactory scopeFactory,
         IOptions<JwtOptions> jwtOptions,
         ILogger<AuthService> logger,
         IHostEnvironment env)
@@ -46,8 +47,8 @@ public sealed class AuthService : IAuthService
         _passwordHasher = passwordHasher;
         _jwt = jwt;
         _blacklist = blacklist;
-        _emailNotifications = emailNotifications;
         _requestContextAccessor = requestContextAccessor;
+        _scopeFactory = scopeFactory;
         _jwtOptions = jwtOptions.Value;
         _logger = logger;
         _env = env;
@@ -85,7 +86,7 @@ public sealed class AuthService : IAuthService
         await _members.AddAsync(member, cancellationToken);
         await _users.SaveChangesAsync(cancellationToken);
 
-        await NotifyWelcomeAsync(user, member, cancellationToken);
+        QueueWelcomeEmail(user.Email, member.FullName);
         return await IssueTokensAsync(user, member, cancellationToken);
     }
 
@@ -106,7 +107,7 @@ public sealed class AuthService : IAuthService
         }
 
         var authResponse = await IssueTokensAsync(user, user.MemberProfile, cancellationToken);
-        await NotifyLoginAsync(user, user.MemberProfile, cancellationToken);
+        QueueLoginAlertEmail(user, user.MemberProfile);
 
         return authResponse;
     }
@@ -154,7 +155,7 @@ public sealed class AuthService : IAuthService
         user.PasswordResetExpiresAt = DateTimeOffset.UtcNow.AddHours(1);
         await _users.SaveChangesAsync(cancellationToken);
 
-        await NotifyPasswordResetAsync(user, plain, user.PasswordResetExpiresAt.Value, cancellationToken);
+        QueuePasswordResetEmail(user.Email, user.MemberProfile?.FullName, plain, user.PasswordResetExpiresAt.Value);
 
         if (_env.IsDevelopment())
         {
@@ -196,7 +197,7 @@ public sealed class AuthService : IAuthService
         }
 
         await _users.SaveChangesAsync(cancellationToken);
-        await NotifyPasswordChangedAsync(user, cancellationToken);
+        QueuePasswordChangedEmail(user.Email, user.MemberProfile?.FullName);
         return true;
     }
 
@@ -233,65 +234,94 @@ public sealed class AuthService : IAuthService
             member?.MatriculeCode);
     }
 
-    private async Task NotifyLoginAsync(User user, Member? member, CancellationToken cancellationToken)
+    private void QueueLoginAlertEmail(User user, Member? member)
+    {
+        var ctx = _requestContextAccessor.GetCurrent();
+        var ip = string.IsNullOrWhiteSpace(ctx.IpAddress) ? "Unknown" : ctx.IpAddress;
+        var ua = string.IsNullOrWhiteSpace(ctx.UserAgent) ? "Unknown" : ctx.UserAgent;
+        _ = Task.Run(() => SendLoginAlertEmailInBackgroundAsync(user.Email, member?.FullName, ip, ua));
+    }
+
+    private void QueueWelcomeEmail(string recipientEmail, string? recipientName) =>
+        _ = Task.Run(() => SendWelcomeEmailInBackgroundAsync(recipientEmail, recipientName));
+
+    private void QueuePasswordResetEmail(string recipientEmail, string? recipientName, string plainToken, DateTimeOffset expiresAtUtc) =>
+        _ = Task.Run(() => SendPasswordResetEmailInBackgroundAsync(recipientEmail, recipientName, plainToken, expiresAtUtc));
+
+    private void QueuePasswordChangedEmail(string recipientEmail, string? recipientName) =>
+        _ = Task.Run(() => SendPasswordChangedEmailInBackgroundAsync(recipientEmail, recipientName));
+
+    private async Task SendWelcomeEmailInBackgroundAsync(string recipientEmail, string? recipientName)
     {
         try
         {
-            var ctx = _requestContextAccessor.GetCurrent();
+            using var scope = _scopeFactory.CreateScope();
+            var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
+            await emails.SendWelcomeAsync(new WelcomeNotification(recipientEmail, recipientName), CancellationToken.None);
+            _logger.LogInformation("Welcome email sent (background) to {Email}.", recipientEmail);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Welcome email failed for {Email}.", recipientEmail);
+        }
+    }
+
+    private async Task SendLoginAlertEmailInBackgroundAsync(string recipientEmail, string? recipientName, string ipAddress, string userAgent)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
             var notification = new LoginAlertNotification(
-                user.Email,
-                member?.FullName,
-                string.IsNullOrWhiteSpace(ctx.IpAddress) ? "Unknown" : ctx.IpAddress,
-                string.IsNullOrWhiteSpace(ctx.UserAgent) ? "Unknown" : ctx.UserAgent,
+                recipientEmail,
+                recipientName,
+                ipAddress,
+                userAgent,
                 DateTimeOffset.UtcNow);
-
-            await _emailNotifications.SendLoginAlertAsync(notification, cancellationToken);
+            await emails.SendLoginAlertAsync(notification, CancellationToken.None);
+            _logger.LogInformation("Login alert email sent (background) to {Email}.", recipientEmail);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Login alert email failed for {Email}.", user.Email);
+            _logger.LogWarning(ex, "Login alert email failed for {Email}.", recipientEmail);
         }
     }
 
-    private async Task NotifyWelcomeAsync(User user, Member? member, CancellationToken cancellationToken)
+    private async Task SendPasswordResetEmailInBackgroundAsync(
+        string recipientEmail,
+        string? recipientName,
+        string plainToken,
+        DateTimeOffset expiresAtUtc)
     {
         try
         {
-            await _emailNotifications.SendWelcomeAsync(
-                new WelcomeNotification(user.Email, member?.FullName),
-                cancellationToken);
+            using var scope = _scopeFactory.CreateScope();
+            var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
+            await emails.SendPasswordResetAsync(
+                new PasswordResetNotification(recipientEmail, recipientName, plainToken, expiresAtUtc),
+                CancellationToken.None);
+            _logger.LogInformation("Password reset email sent (background) to {Email}.", recipientEmail);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Welcome email failed for {Email}.", user.Email);
+            _logger.LogWarning(ex, "Password reset email failed for {Email}.", recipientEmail);
         }
     }
 
-    private async Task NotifyPasswordResetAsync(User user, string plainToken, DateTimeOffset expiresAtUtc, CancellationToken cancellationToken)
+    private async Task SendPasswordChangedEmailInBackgroundAsync(string recipientEmail, string? recipientName)
     {
         try
         {
-            await _emailNotifications.SendPasswordResetAsync(
-                new PasswordResetNotification(user.Email, user.MemberProfile?.FullName, plainToken, expiresAtUtc),
-                cancellationToken);
+            using var scope = _scopeFactory.CreateScope();
+            var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
+            await emails.SendPasswordChangedAsync(
+                new PasswordChangedNotification(recipientEmail, recipientName, DateTimeOffset.UtcNow),
+                CancellationToken.None);
+            _logger.LogInformation("Password changed email sent (background) to {Email}.", recipientEmail);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Password reset email failed for {Email}.", user.Email);
-        }
-    }
-
-    private async Task NotifyPasswordChangedAsync(User user, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await _emailNotifications.SendPasswordChangedAsync(
-                new PasswordChangedNotification(user.Email, user.MemberProfile?.FullName, DateTimeOffset.UtcNow),
-                cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Password changed email failed for {Email}.", user.Email);
+            _logger.LogWarning(ex, "Password changed email failed for {Email}.", recipientEmail);
         }
     }
 
