@@ -8,6 +8,8 @@ using DreamTeamEver.Infrastructure.Email.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using SendGrid;
 
 namespace DreamTeamEver.Infrastructure;
 
@@ -23,9 +25,14 @@ public static class DependencyInjection
             configuration.GetSection(AdminSeedOptions.SectionName));
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<EmailNotificationOptions>>().Value;
+            return new SendGridClient(options.SendGridApiKey);
+        });
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddSingleton<IMustacheTemplateRenderer, EmbeddedMustacheTemplateRenderer>();
-        services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<IEmailSender, SendGridEmailSender>();
 
         return services;
     }

@@ -16,8 +16,6 @@ public static class EmailDefaults
     public const string RoleChangedSubject = "Your account role was updated";
     public const string PendingPaymentReminderSubject = "Complete your pending payment";
 
-    public const int SmtpPort = 587;
-    public const bool UseSsl = false;
     public const bool EnablePendingPaymentReminders = false;
     public const int PendingReminderMinAgeHours = 24;
     public const int PendingReminderWindowMinutes = 60;

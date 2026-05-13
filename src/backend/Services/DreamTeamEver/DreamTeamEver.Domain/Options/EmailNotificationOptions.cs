@@ -7,11 +7,7 @@ public sealed record EmailNotificationOptions : IDreamTeamEverOptions
     public static string SectionName => "Email";
 
     public bool Enabled { get; init; }
-    public string SmtpHost { get; init; } = string.Empty;
-    public int SmtpPort { get; init; } = EmailDefaults.SmtpPort;
-    public bool UseSsl { get; init; } = EmailDefaults.UseSsl;
-    public string SmtpUsername { get; init; } = string.Empty;
-    public string SmtpPassword { get; init; } = string.Empty;
+    public string SendGridApiKey { get; init; } = string.Empty;
     public string SenderEmail { get; init; } = string.Empty;
     public string SenderName { get; init; } = EmailDefaults.SenderName;
     public string LogoUrl { get; init; } = EmailDefaults.LogoUrl;

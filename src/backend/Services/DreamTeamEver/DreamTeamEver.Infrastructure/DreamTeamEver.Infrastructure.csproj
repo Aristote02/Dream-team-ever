@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" />
     <PackageReference Include="Mapster" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
@@ -17,8 +16,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
-    <PackageReference Include="MimeKit" />
-    <PackageReference Include="NETCore.MailKit" />
+    <PackageReference Include="SendGrid" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />

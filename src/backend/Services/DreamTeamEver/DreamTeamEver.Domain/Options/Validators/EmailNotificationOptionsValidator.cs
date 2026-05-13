@@ -17,9 +17,7 @@ public sealed class EmailNotificationOptionsValidator : IValidateOptions<EmailNo
         }
 
         var errors = new List<string>();
-        ValidateRequired(options.SmtpHost, nameof(options.SmtpHost), errors);
-        ValidateRequired(options.SmtpUsername, nameof(options.SmtpUsername), errors);
-        ValidateRequired(options.SmtpPassword, nameof(options.SmtpPassword), errors);
+        ValidateRequired(options.SendGridApiKey, nameof(options.SendGridApiKey), errors);
         ValidateRequired(options.SenderEmail, nameof(options.SenderEmail), errors);
         ValidateRequired(options.SenderName, nameof(options.SenderName), errors);
         ValidateRequired(options.FrontendBaseUrl, nameof(options.FrontendBaseUrl), errors);
@@ -33,11 +31,6 @@ public sealed class EmailNotificationOptionsValidator : IValidateOptions<EmailNo
         ValidateRequired(options.AccountDeletedSubject, nameof(options.AccountDeletedSubject), errors);
         ValidateRequired(options.RoleChangedSubject, nameof(options.RoleChangedSubject), errors);
         ValidateRequired(options.PendingPaymentReminderSubject, nameof(options.PendingPaymentReminderSubject), errors);
-
-        if (options.SmtpPort is <= 0 or > 65535)
-        {
-            errors.Add($"{nameof(options.SmtpPort)} must be between 1 and 65535.");
-        }
 
         if (options.PendingReminderMinAgeHours <= 0)
         {
