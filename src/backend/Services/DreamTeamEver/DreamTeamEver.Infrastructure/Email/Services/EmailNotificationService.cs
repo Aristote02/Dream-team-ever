@@ -196,6 +196,7 @@ internal sealed class EmailNotificationService : IEmailNotificationService
     private async Task SendAndLogAsync(string email, string subject, string html, string kind, CancellationToken cancellationToken)
     {
         await _sender.SendAsync(email, subject, html, cancellationToken);
+        
         _logger.LogInformation("{EmailKind} email sent to {Email}.", kind, email);
     }
 
@@ -203,6 +204,7 @@ internal sealed class EmailNotificationService : IEmailNotificationService
     {
         var baseUrl = _options.FrontendBaseUrl.TrimEnd('/');
         var path = _options.ResetPasswordPath.StartsWith('/') ? _options.ResetPasswordPath : "/" + _options.ResetPasswordPath;
+        
         return $"{baseUrl}{path}?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(email)}";
     }
 
@@ -213,10 +215,108 @@ internal sealed class EmailNotificationService : IEmailNotificationService
     {
         if (!string.IsNullOrWhiteSpace(_options.LogoUrl))
         {
-            return _options.LogoUrl;
+            return EnsureRasterLogoUrlForEmailClients(_options.LogoUrl.Trim());
         }
 
         return _logoDataUri.Value;
+    }
+
+    /// <summary>
+    /// Gmail (and some other clients) do not load SVG in <c>img</c> tags via their image proxy.
+    /// For Cloudinary-hosted SVGs, request a small PNG so the logo renders in webmail.
+    /// </summary>
+    private static string EnsureRasterLogoUrlForEmailClients(string logoUrl)
+    {
+        if (!Uri.TryCreate(logoUrl, UriKind.Absolute, out var uri))
+        {
+            return logoUrl;
+        }
+
+        if (!string.Equals(uri.Host, "res.cloudinary.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return logoUrl;
+        }
+
+        var path = uri.AbsolutePath;
+        if (!path.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+        {
+            return logoUrl;
+        }
+
+        const string uploadMarker = "/image/upload/";
+        var uploadIdx = path.IndexOf(uploadMarker, StringComparison.OrdinalIgnoreCase);
+        if (uploadIdx < 0)
+        {
+            return logoUrl;
+        }
+
+        var insertAt = uploadIdx + uploadMarker.Length;
+        var tail = path.AsSpan(insertAt);
+        if (CloudinaryTransformPrefixAlreadyIncludesPng(tail))
+        {
+            return logoUrl;
+        }
+
+        var newPath = string.Concat(path.AsSpan(0, insertAt), "f_png,w_144,q_auto/", path.AsSpan(insertAt));
+
+        var builder = new UriBuilder(uri) { Path = newPath };
+        return builder.Uri.AbsoluteUri;
+    }
+
+    /// <summary>
+    /// Returns true when any path segment before the first <c>v{digits}</c> version segment already requests PNG output.
+    /// </summary>
+    private static bool CloudinaryTransformPrefixAlreadyIncludesPng(ReadOnlySpan<char> pathAfterUploadMarker)
+    {
+        var remaining = pathAfterUploadMarker;
+        while (remaining.Length > 0)
+        {
+            var slash = remaining.IndexOf('/');
+            var part = slash < 0 ? remaining : remaining[..slash];
+            if (slash < 0)
+            {
+                remaining = ReadOnlySpan<char>.Empty;
+            }
+            else
+            {
+                remaining = remaining[(slash + 1)..];
+            }
+
+            if (IsCloudinaryVersionSegment(part))
+            {
+                break;
+            }
+
+            if (part.IndexOf("f_png".AsSpan(), StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsCloudinaryVersionSegment(ReadOnlySpan<char> part)
+    {
+        if (part.Length < 2)
+        {
+            return false;
+        }
+
+        if (part[0] is not ('v' or 'V'))
+        {
+            return false;
+        }
+
+        for (var i = 1; i < part.Length; i++)
+        {
+            if (!char.IsAsciiDigit(part[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static string LoadLogoDataUri()
