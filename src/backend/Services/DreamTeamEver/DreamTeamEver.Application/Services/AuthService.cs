@@ -6,6 +6,7 @@ using DreamTeamEver.Application.Dtos;
 using DreamTeamEver.Application.Security;
 using DreamTeamEver.Domain.Entities;
 using DreamTeamEver.Domain.Enums;
+using DreamTeamEver.Domain.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -86,8 +87,10 @@ public sealed class AuthService : IAuthService
         await _members.AddAsync(member, cancellationToken);
         await _users.SaveChangesAsync(cancellationToken);
 
-        QueueWelcomeEmail(user.Email, member.FullName);
-        return await IssueTokensAsync(user, member, cancellationToken);
+        var authResponse = await IssueTokensAsync(user, member, cancellationToken);
+        await SendWelcomeEmailAfterSignUpAsync(user.Email, member.FullName, cancellationToken);
+        
+        return authResponse;
     }
 
     public async Task<AuthResponse?> SignInAsync(SignInRequest request, CancellationToken cancellationToken = default)
@@ -242,23 +245,28 @@ public sealed class AuthService : IAuthService
         _ = Task.Run(() => SendLoginAlertEmailInBackgroundAsync(user.Email, member?.FullName, ip, ua));
     }
 
-    private void QueueWelcomeEmail(string recipientEmail, string? recipientName) =>
-        _ = Task.Run(() => SendWelcomeEmailInBackgroundAsync(recipientEmail, recipientName));
-
     private void QueuePasswordResetEmail(string recipientEmail, string? recipientName, string plainToken, DateTimeOffset expiresAtUtc) =>
         _ = Task.Run(() => SendPasswordResetEmailInBackgroundAsync(recipientEmail, recipientName, plainToken, expiresAtUtc));
 
     private void QueuePasswordChangedEmail(string recipientEmail, string? recipientName) =>
         _ = Task.Run(() => SendPasswordChangedEmailInBackgroundAsync(recipientEmail, recipientName));
 
-    private async Task SendWelcomeEmailInBackgroundAsync(string recipientEmail, string? recipientName)
+    private async Task SendWelcomeEmailAfterSignUpAsync(string recipientEmail, string? recipientName, CancellationToken cancellationToken)
     {
         try
         {
-            using var scope = _scopeFactory.CreateScope();
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var emailEnabled = scope.ServiceProvider.GetRequiredService<IOptions<EmailNotificationOptions>>().Value.Enabled;
             var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
-            await emails.SendWelcomeAsync(new WelcomeNotification(recipientEmail, recipientName), CancellationToken.None);
-            _logger.LogInformation("Welcome email sent (background) to {Email}.", recipientEmail);
+            await emails.SendWelcomeAsync(new WelcomeNotification(recipientEmail, recipientName), cancellationToken);
+            
+            if (!emailEnabled)
+            {
+                _logger.LogInformation("Welcome email skipped: Email:Enabled is false for {Email}.", recipientEmail);
+                return;
+            }
+
+            _logger.LogInformation("Welcome email sent to {Email}.", recipientEmail);
         }
         catch (Exception ex)
         {
@@ -270,15 +278,20 @@ public sealed class AuthService : IAuthService
     {
         try
         {
-            using var scope = _scopeFactory.CreateScope();
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var emailEnabled = scope.ServiceProvider.GetRequiredService<IOptions<EmailNotificationOptions>>().Value.Enabled;
             var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
-            var notification = new LoginAlertNotification(
-                recipientEmail,
-                recipientName,
-                ipAddress,
-                userAgent,
-                DateTimeOffset.UtcNow);
+            var notification = new LoginAlertNotification(recipientEmail, recipientName, ipAddress, userAgent, DateTimeOffset.UtcNow);
+            
             await emails.SendLoginAlertAsync(notification, CancellationToken.None);
+            
+            if (!emailEnabled)
+            {
+                _logger.LogInformation("Login alert email skipped: Email:Enabled is false for {Email}.", recipientEmail);
+                
+                return;
+            }
+
             _logger.LogInformation("Login alert email sent (background) to {Email}.", recipientEmail);
         }
         catch (Exception ex)
@@ -295,11 +308,18 @@ public sealed class AuthService : IAuthService
     {
         try
         {
-            using var scope = _scopeFactory.CreateScope();
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var emailEnabled = scope.ServiceProvider.GetRequiredService<IOptions<EmailNotificationOptions>>().Value.Enabled;
             var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
-            await emails.SendPasswordResetAsync(
-                new PasswordResetNotification(recipientEmail, recipientName, plainToken, expiresAtUtc),
-                CancellationToken.None);
+            await emails.SendPasswordResetAsync(new PasswordResetNotification(recipientEmail, recipientName, plainToken, expiresAtUtc), CancellationToken.None);
+            
+            if (!emailEnabled)
+            {
+                _logger.LogInformation("Password reset email skipped: Email:Enabled is false for {Email}.", recipientEmail);
+                
+                return;
+            }
+
             _logger.LogInformation("Password reset email sent (background) to {Email}.", recipientEmail);
         }
         catch (Exception ex)
@@ -312,11 +332,18 @@ public sealed class AuthService : IAuthService
     {
         try
         {
-            using var scope = _scopeFactory.CreateScope();
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var emailEnabled = scope.ServiceProvider.GetRequiredService<IOptions<EmailNotificationOptions>>().Value.Enabled;
             var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
-            await emails.SendPasswordChangedAsync(
-                new PasswordChangedNotification(recipientEmail, recipientName, DateTimeOffset.UtcNow),
-                CancellationToken.None);
+            await emails.SendPasswordChangedAsync(new PasswordChangedNotification(recipientEmail, recipientName, DateTimeOffset.UtcNow), CancellationToken.None);
+            
+            if (!emailEnabled)
+            {
+                _logger.LogInformation("Password changed email skipped: Email:Enabled is false for {Email}.", recipientEmail);
+                
+                return;
+            }
+
             _logger.LogInformation("Password changed email sent (background) to {Email}.", recipientEmail);
         }
         catch (Exception ex)

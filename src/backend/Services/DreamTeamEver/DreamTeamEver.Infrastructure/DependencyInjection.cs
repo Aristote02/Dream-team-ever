@@ -2,6 +2,7 @@ using DreamTeamEver.Application.Configuration;
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Domain.Entities;
 using DreamTeamEver.Domain.Options;
+using DreamTeamEver.Infrastructure.Email;
 using DreamTeamEver.Infrastructure.Email.Rendering;
 using DreamTeamEver.Infrastructure.Email.Sending;
 using DreamTeamEver.Infrastructure.Email.Services;
@@ -30,6 +31,7 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<IOptions<EmailNotificationOptions>>().Value;
             return new SendGridClient(options.SendGridApiKey);
         });
+        services.AddSingleton<IEmailHeaderLogoUrlResolver, CloudinaryEmailHeaderLogoUrlResolver>();
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddSingleton<IMustacheTemplateRenderer, EmbeddedMustacheTemplateRenderer>();
         services.AddScoped<IEmailSender, SendGridEmailSender>();

@@ -11,6 +11,18 @@ public sealed record EmailNotificationOptions : IDreamTeamEverOptions
     public string SenderEmail { get; init; } = string.Empty;
     public string SenderName { get; init; } = EmailDefaults.SenderName;
     public string LogoUrl { get; init; } = EmailDefaults.LogoUrl;
+
+    /// <summary>Optional. When set with <see cref="CloudinaryCloudName"/>, <see cref="CloudinaryApiKey"/>, and <see cref="CloudinaryApiSecret"/>,
+    /// the header image URL is built with CloudinaryDotNet (PNG) for webmail compatibility.</summary>
+    public string CloudinaryLogoPublicId { get; init; } = string.Empty;
+
+    /// <summary>Optional Cloudinary asset version (digits only, e.g. <c>1778250995</c>).</summary>
+    public string CloudinaryLogoVersion { get; init; } = string.Empty;
+
+    public string CloudinaryCloudName { get; init; } = string.Empty;
+    public string CloudinaryApiKey { get; init; } = string.Empty;
+    public string CloudinaryApiSecret { get; init; } = string.Empty;
+
     public string FrontendBaseUrl { get; init; } = string.Empty;
     public string ResetPasswordPath { get; init; } = EmailDefaults.ResetPasswordPath;
     public string WelcomeSubject { get; init; } = EmailDefaults.WelcomeSubject;

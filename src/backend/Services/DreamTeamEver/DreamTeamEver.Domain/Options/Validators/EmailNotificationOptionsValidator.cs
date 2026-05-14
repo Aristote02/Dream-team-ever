@@ -32,6 +32,13 @@ public sealed class EmailNotificationOptionsValidator : IValidateOptions<EmailNo
         ValidateRequired(options.RoleChangedSubject, nameof(options.RoleChangedSubject), errors);
         ValidateRequired(options.PendingPaymentReminderSubject, nameof(options.PendingPaymentReminderSubject), errors);
 
+        if (!string.IsNullOrWhiteSpace(options.CloudinaryLogoPublicId))
+        {
+            ValidateRequired(options.CloudinaryCloudName, nameof(options.CloudinaryCloudName), errors);
+            ValidateRequired(options.CloudinaryApiKey, nameof(options.CloudinaryApiKey), errors);
+            ValidateRequired(options.CloudinaryApiSecret, nameof(options.CloudinaryApiSecret), errors);
+        }
+
         if (options.PendingReminderMinAgeHours <= 0)
         {
             errors.Add($"{nameof(options.PendingReminderMinAgeHours)} must be greater than 0.");

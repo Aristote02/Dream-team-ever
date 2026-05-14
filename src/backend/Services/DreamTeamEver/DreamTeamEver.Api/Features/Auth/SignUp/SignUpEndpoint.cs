@@ -2,7 +2,6 @@ using DreamTeamEver.Api.Common;
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Dtos;
 using FastEndpoints;
-using Microsoft.AspNetCore.Http;
 
 namespace DreamTeamEver.Api.Features.Auth.SignUp;
 
@@ -28,9 +27,8 @@ public sealed class SignUpEndpoint : Endpoint<SignUpRequest, AuthResponse>
         var result = await _auth.SignUpAsync(req, ct);
         if (result is null)
         {
-            await Send.ResultAsync(
-                Results.Json(new { error = ApiErrorMessages.EmailAlreadyRegistered },
-                    statusCode: StatusCodes.Status409Conflict));
+            await Send.ResultAsync(Results.Json(new { error = ApiErrorMessages.EmailAlreadyRegistered }, statusCode: StatusCodes.Status409Conflict));
+            
             return;
         }
 

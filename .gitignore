@@ -59,6 +59,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Oo]ut/
+/artifacts/
 
 # MSBuild logs
 msbuild.log
