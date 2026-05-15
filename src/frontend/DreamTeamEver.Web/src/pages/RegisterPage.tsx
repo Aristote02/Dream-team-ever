@@ -32,8 +32,10 @@ function validateRegister(values: RegisterValues): RegisterFieldErrors {
 
   if (!tel) {
     errors.phone = 'Phone number is required.'
+  } else if (!/^\d+$/.test(tel)) {
+    errors.phone = 'Phone number must contain digits only.'
   } else if (tel.length < 6 || tel.length > 32) {
-    errors.phone = 'Phone must be between 6 and 32 characters.'
+    errors.phone = 'Phone number must be between 6 and 32 digits.'
   }
 
   if (!values.password) {
@@ -170,19 +172,22 @@ export function RegisterPage() {
             id="register-phone"
             name="phone"
             type="tel"
+            inputMode="numeric"
             autoComplete="tel"
             value={phone}
             onChange={(e) => {
-              setPhone(e.target.value)
+              const digitsOnly = e.target.value.replace(/\D/g, '')
+              setPhone(digitsOnly)
               if (fieldErrors.phone) {
                 setFieldErrors(prev => ({ ...prev, phone: undefined }))
               }
             }}
             className={authInputClassName}
-            placeholder="+243 …"
+            placeholder="243900000000"
             required
             minLength={6}
             maxLength={32}
+            pattern="[0-9]*"
           />
           {fieldErrors.phone ? (
             <p className="mt-1 text-xs text-red-700">{fieldErrors.phone}</p>

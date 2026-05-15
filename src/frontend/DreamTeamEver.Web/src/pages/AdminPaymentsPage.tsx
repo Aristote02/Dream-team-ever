@@ -74,7 +74,7 @@ export function AdminPaymentsPage() {
       ) : null}
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-stone-200/80 bg-white shadow-sm ring-1 ring-stone-100">
-        <table className="w-full min-w-[980px] text-left text-sm">
+        <table className="w-full min-w-[760px] text-left text-sm">
           <thead>
             <tr className="border-b border-stone-200 bg-stone-50 text-stone-600">
               <th className="px-3 py-2 font-medium">Created At</th>
@@ -82,19 +82,18 @@ export function AdminPaymentsPage() {
               <th className="px-3 py-2 font-medium">Method</th>
               <th className="px-3 py-2 font-medium">Amount</th>
               <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Provider Ref</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td className="px-3 py-6 text-center text-sm text-stone-500" colSpan={6}>
+                <td className="px-3 py-6 text-center text-sm text-stone-500" colSpan={5}>
                   Loading payments...
                 </td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td className="px-3 py-6 text-center text-sm text-stone-500" colSpan={6}>
+                <td className="px-3 py-6 text-center text-sm text-stone-500" colSpan={5}>
                   No payments found.
                 </td>
               </tr>
@@ -117,9 +116,6 @@ export function AdminPaymentsPage() {
                     >
                       {row.status}
                     </span>
-                  </td>
-                  <td className="px-3 py-2 font-mono text-xs text-stone-700">
-                    {row.providerReference ?? "—"}
                   </td>
                 </tr>
               ))
