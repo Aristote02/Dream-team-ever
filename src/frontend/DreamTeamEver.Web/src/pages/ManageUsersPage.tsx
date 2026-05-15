@@ -3,9 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import {
+  changeAdminUserRole,
   deleteAdminUser,
   fetchAdminMembers,
   type AdminMemberSummaryDto,
+  type AdminUserRole,
 } from "../api/authApi";
 
 type Role = "admin" | "student";
@@ -61,6 +63,21 @@ export function ManageUsersPage() {
     queryFn: loadMembers,
   });
 
+  const roleMutation = useMutation({
+    mutationFn: async (payload: { userId: string; role: AdminUserRole }) => {
+      const token = await getAccessToken();
+      if (!token) throw new Error("Session expired. Please sign in again.");
+      const result = await changeAdminUserRole(token, payload.userId, payload.role);
+      if (!result.ok) throw new Error(result.message ?? "Could not change user role.");
+      return payload;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "members"] });
+      setMessage("Role updated.");
+      window.setTimeout(() => setMessage(null), 3000);
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (userId: string) => {
       const token = await getAccessToken();
@@ -79,6 +96,20 @@ export function ManageUsersPage() {
       window.setTimeout(() => setMessage(null), 3000);
     },
   });
+
+  async function onRoleChange(row: MemberRow, nextRole: AdminUserRole) {
+    const currentRole: AdminUserRole = row.role === "admin" ? "Admin" : "Member";
+    if (currentRole === nextRole) return;
+
+    const label = nextRole === "Admin" ? "Admin" : "Student";
+    if (!window.confirm(`Change ${row.fullName}'s role to ${label}?`)) return;
+
+    try {
+      await roleMutation.mutateAsync({ userId: row.userId, role: nextRole });
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Could not change user role.");
+    }
+  }
 
   async function onDelete(row: MemberRow) {
     if (!window.confirm(`Delete ${row.fullName} (${row.email})? This cannot be undone.`)) return;
@@ -230,15 +261,20 @@ export function ManageUsersPage() {
                 <td className="px-3 py-2 font-mono text-xs text-stone-800">{row.matriculeCode || "—"}</td>
                 <td className="px-3 py-2 font-mono text-xs text-stone-700">{row.phone || "—"}</td>
                 <td className="px-3 py-2">
-                  <span
+                  <select
+                    aria-label={`Role for ${row.fullName}`}
+                    value={row.role === "admin" ? "Admin" : "Member"}
+                    disabled={roleMutation.isPending && roleMutation.variables?.userId === row.userId}
+                    onChange={(e) => onRoleChange(row, e.target.value as AdminUserRole)}
                     className={
                       row.role === "admin"
-                        ? "rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900"
-                        : "rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700"
+                        ? "rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 outline-none focus:border-amber-500 disabled:opacity-60"
+                        : "rounded-lg border border-stone-200 bg-stone-50 px-2 py-1 text-xs font-medium text-stone-700 outline-none focus:border-amber-500 disabled:opacity-60"
                     }
                   >
-                    {row.role === "admin" ? "Admin" : "Student"}
-                  </span>
+                    <option value="Member">Student</option>
+                    <option value="Admin">Admin</option>
+                  </select>
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex flex-wrap justify-end gap-1">

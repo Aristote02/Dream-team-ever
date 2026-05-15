@@ -334,6 +334,38 @@ export async function fetchAdminMembers(
   }
 }
 
+export type AdminUserRole = 'Admin' | 'Member'
+
+export async function changeAdminUserRole(
+  accessToken: string,
+  userId: string,
+  role: AdminUserRole,
+): Promise<{ ok: true } | { ok: false; status: number; message?: string }> {
+  const res = await fetch(apiUrl(`/api/admin/users/${userId}/role`), {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ role }),
+  })
+
+  if (res.ok || res.status === 204) return { ok: true }
+
+  const body = (await readJson(res)) as { error?: string; message?: string } | null
+  return {
+    ok: false,
+    status: res.status,
+    message:
+      typeof body?.message === 'string'
+        ? body.message
+        : typeof body?.error === 'string'
+          ? body.error
+          : undefined,
+  }
+}
+
 export async function deleteAdminUser(
   accessToken: string,
   userId: string,
