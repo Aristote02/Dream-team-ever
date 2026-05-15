@@ -4,7 +4,7 @@ public static class EmailDefaults
 {
     public const string SenderName = "Dream Team Ever";
     public const string LogoUrl = "";
-    public const string ResetPasswordPath = "/reset-password";
+    public const string ResetPasswordPath = "/forgot-password";
 
     public const string WelcomeSubject = "Welcome to Dream Team Ever";
     public const string PasswordResetSubject = "Reset your Dream Team Ever password";
