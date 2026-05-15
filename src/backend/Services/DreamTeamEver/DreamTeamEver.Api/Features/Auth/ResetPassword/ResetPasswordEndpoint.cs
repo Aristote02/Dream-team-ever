@@ -1,7 +1,6 @@
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Application.Dtos;
 using FastEndpoints;
-using Microsoft.AspNetCore.Http;
 
 namespace DreamTeamEver.Api.Features.Auth.ResetPassword;
 
