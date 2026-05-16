@@ -22,4 +22,7 @@ public class User
     public string? PasswordResetTokenHash { get; set; }
 
     public DateTimeOffset? PasswordResetExpiresAt { get; set; }
+
+    /// <summary>ISO country code (or <c>local</c>/<c>unknown</c>) from the last successful sign-in, for login-alert location checks.</summary>
+    public string? LastLoginLocationKey { get; set; }
 }
