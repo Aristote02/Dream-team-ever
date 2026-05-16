@@ -2,6 +2,7 @@ using DreamTeamEver.Application.Configuration;
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Domain.Entities;
 using DreamTeamEver.Domain.Options;
+using DreamTeamEver.Infrastructure.Auth;
 using DreamTeamEver.Infrastructure.Email;
 using DreamTeamEver.Infrastructure.Email.Rendering;
 using DreamTeamEver.Infrastructure.Email.Sending;
@@ -24,6 +25,8 @@ public static class DependencyInjection
             configuration.GetSection(JwtOptions.SectionName));
         services.Configure<AdminSeedOptions>(
             configuration.GetSection(AdminSeedOptions.SectionName));
+
+        services.AddGeoIpLoginLocation(configuration);
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddSingleton(sp =>

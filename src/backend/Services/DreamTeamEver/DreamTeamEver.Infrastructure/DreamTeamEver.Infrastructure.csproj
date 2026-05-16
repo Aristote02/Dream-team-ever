@@ -17,6 +17,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+    <PackageReference Include="Polly.Extensions.Http" />
     <PackageReference Include="SendGrid" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" />

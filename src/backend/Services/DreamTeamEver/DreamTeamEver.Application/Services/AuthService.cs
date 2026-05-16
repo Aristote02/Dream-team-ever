@@ -24,6 +24,7 @@ public sealed class AuthService : IAuthService
     private readonly IJwtTokenGenerator _jwt;
     private readonly ITokenBlacklistService _blacklist;
     private readonly IRequestContextAccessor _requestContextAccessor;
+    private readonly ILoginLocationKeyResolver _loginLocationKeyResolver;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly JwtOptions _jwtOptions;
     private readonly ILogger<AuthService> _logger;
@@ -37,6 +38,7 @@ public sealed class AuthService : IAuthService
         IJwtTokenGenerator jwt,
         ITokenBlacklistService blacklist,
         IRequestContextAccessor requestContextAccessor,
+        ILoginLocationKeyResolver loginLocationKeyResolver,
         IServiceScopeFactory scopeFactory,
         IOptions<JwtOptions> jwtOptions,
         ILogger<AuthService> logger,
@@ -49,6 +51,7 @@ public sealed class AuthService : IAuthService
         _jwt = jwt;
         _blacklist = blacklist;
         _requestContextAccessor = requestContextAccessor;
+        _loginLocationKeyResolver = loginLocationKeyResolver;
         _scopeFactory = scopeFactory;
         _jwtOptions = jwtOptions.Value;
         _logger = logger;
@@ -96,7 +99,7 @@ public sealed class AuthService : IAuthService
     public async Task<AuthResponse?> SignInAsync(SignInRequest request, CancellationToken cancellationToken = default)
     {
         var email = request.Email.Trim();
-        var user = await _users.GetByEmailWithMemberProfileAsync(email, cancellationToken);
+        var user = await _users.GetByEmailWithMemberProfileTrackedAsync(email, cancellationToken);
 
         if (user is null)
         {
@@ -110,7 +113,7 @@ public sealed class AuthService : IAuthService
         }
 
         var authResponse = await IssueTokensAsync(user, user.MemberProfile, cancellationToken);
-        QueueLoginAlertEmail(user, user.MemberProfile);
+        await ProcessLoginLocationOnSignInAsync(user, user.MemberProfile, cancellationToken);
 
         return authResponse;
     }
@@ -237,13 +240,49 @@ public sealed class AuthService : IAuthService
             member?.MatriculeCode);
     }
 
-    private void QueueLoginAlertEmail(User user, Member? member)
+    /// <summary>
+    /// Stores location key from <see cref="ILoginLocationKeyResolver"/>
+    /// login alert email only when the key changes (e.g. country change)
+    /// </summary>
+    private async Task ProcessLoginLocationOnSignInAsync(User user, Member? member, CancellationToken cancellationToken)
     {
         var ctx = _requestContextAccessor.GetCurrent();
-        var ip = string.IsNullOrWhiteSpace(ctx.IpAddress) ? "Unknown" : ctx.IpAddress;
+        var ip = string.IsNullOrWhiteSpace(ctx.IpAddress) ? null : ctx.IpAddress.Trim();
+        var currentKey = await _loginLocationKeyResolver.ResolveLocationKeyAsync(ip, cancellationToken);
+        var previousKey = user.LastLoginLocationKey;
+
+        if (previousKey is null)
+        {
+            user.LastLoginLocationKey = currentKey;
+            await _users.SaveChangesAsync(cancellationToken);
+            _logger.LogDebug("Recorded first sign-in location {LocationKey} for {Email}; login alert not sent.", currentKey, user.Email);
+            
+            return;
+        }
+
+        if (string.Equals(previousKey, currentKey, StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogDebug("Sign-in location unchanged ({LocationKey}) for {Email}; login alert skipped.", currentKey, user.Email);
+            
+            return;
+        }
+
+        user.LastLoginLocationKey = currentKey;
+        await _users.SaveChangesAsync(cancellationToken);
+
+        var displayIp = ip ?? "Unknown";
         var ua = string.IsNullOrWhiteSpace(ctx.UserAgent) ? "Unknown" : ctx.UserAgent;
-        _ = Task.Run(() => SendLoginAlertEmailInBackgroundAsync(user.Email, member?.FullName, ip, ua));
+        _logger.LogInformation(
+            "Sign-in location changed from {PreviousLocationKey} to {CurrentLocationKey} for {Email}; sending login alert.",
+            previousKey,
+            currentKey,
+            user.Email);
+        
+        QueueLoginAlertEmail(user.Email, member?.FullName, displayIp, ua);
     }
+
+    private void QueueLoginAlertEmail(string recipientEmail, string? recipientName, string ipAddress, string userAgent) =>
+        _ = Task.Run(() => SendLoginAlertEmailInBackgroundAsync(recipientEmail, recipientName, ipAddress, userAgent));
 
     private void QueuePasswordResetEmail(string recipientEmail, string? recipientName, string plainToken, DateTimeOffset expiresAtUtc) =>
         _ = Task.Run(() => SendPasswordResetEmailInBackgroundAsync(recipientEmail, recipientName, plainToken, expiresAtUtc));
