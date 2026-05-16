@@ -22,9 +22,7 @@ public sealed class SignInEndpoint : Endpoint<SignInRequest, AuthResponse>
         var result = await _auth.SignInAsync(req, ct);
         if (result is null)
         {
-            await Send.ResultAsync(
-                Results.Json(new { error = ApiErrorMessages.InvalidCredentials },
-                    statusCode: StatusCodes.Status401Unauthorized));
+            await Send.ResultAsync(Results.Json(new { error = ApiErrorMessages.InvalidCredentials }, statusCode: StatusCodes.Status401Unauthorized));
             return;
         }
 
