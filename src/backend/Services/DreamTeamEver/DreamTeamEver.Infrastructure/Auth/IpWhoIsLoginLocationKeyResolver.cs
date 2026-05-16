@@ -1,4 +1,3 @@
-using System.Net.Http;
 using DreamTeamEver.Application.Abstractions;
 using DreamTeamEver.Domain.Constants;
 using DreamTeamEver.Domain.Options;
@@ -45,8 +44,9 @@ internal sealed class IpWhoIsLoginLocationKeyResolver : ILoginLocationKeyResolve
         var ip = await ClientAddressParser.TryParseOrResolveAsync(ipAddress, dnsTimeout, cancellationToken);
         if (ip is null)
         {
+            _logger.LogDebug("No public client IP available for location lookup; using unknown location key.");
             activity?.SetTag("location.key", LoginLocationKeys.Unknown);
-            
+
             return LoginLocationKeys.Unknown;
         }
 
@@ -69,6 +69,11 @@ internal sealed class IpWhoIsLoginLocationKeyResolver : ILoginLocationKeyResolve
             locationKey = string.IsNullOrWhiteSpace(countryCode)
                 ? LoginLocationKeys.Unknown
                 : countryCode;
+
+            if (locationKey == LoginLocationKeys.Unknown)
+            {
+                _logger.LogDebug("Geo lookup returned no country for client address fingerprint {IpFingerprint}.", ipFingerprint);
+            }
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {

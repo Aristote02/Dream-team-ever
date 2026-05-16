@@ -14,8 +14,9 @@ internal sealed class HttpRequestContextAccessor : IRequestContextAccessor
     public RequestContext GetCurrent()
     {
         var httpContext = _httpContextAccessor.HttpContext;
-        var ip = httpContext?.Connection.RemoteIpAddress?.ToString();
+        var ip = ClientIpAddressResolver.GetClientIpAddress(httpContext);
         var userAgent = httpContext?.Request.Headers.UserAgent.ToString();
+        
         return new RequestContext(ip, userAgent);
     }
 }
