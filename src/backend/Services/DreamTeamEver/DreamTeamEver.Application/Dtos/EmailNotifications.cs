@@ -18,7 +18,7 @@ public sealed record PasswordChangedNotification(
 public sealed record LoginAlertNotification(
     string RecipientEmail,
     string? RecipientName,
-    string IpAddress,
+    string Location,
     string UserAgent,
     DateTimeOffset LoggedInAtUtc);
 

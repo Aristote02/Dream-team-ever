@@ -270,19 +270,19 @@ public sealed class AuthService : IAuthService
         user.LastLoginLocationKey = currentKey;
         await _users.SaveChangesAsync(cancellationToken);
 
-        var displayIp = ip ?? "Unknown";
+        var locationLabel = LoginLocationDisplay.Format(currentKey);
         var ua = string.IsNullOrWhiteSpace(ctx.UserAgent) ? "Unknown" : ctx.UserAgent;
         _logger.LogInformation(
             "Sign-in location changed from {PreviousLocationKey} to {CurrentLocationKey} for {Email}; sending login alert.",
             previousKey,
             currentKey,
             user.Email);
-        
-        QueueLoginAlertEmail(user.Email, member?.FullName, displayIp, ua);
+
+        QueueLoginAlertEmail(user.Email, member?.FullName, locationLabel, ua);
     }
 
-    private void QueueLoginAlertEmail(string recipientEmail, string? recipientName, string ipAddress, string userAgent) =>
-        _ = Task.Run(() => SendLoginAlertEmailInBackgroundAsync(recipientEmail, recipientName, ipAddress, userAgent));
+    private void QueueLoginAlertEmail(string recipientEmail, string? recipientName, string location, string userAgent) =>
+        _ = Task.Run(() => SendLoginAlertEmailInBackgroundAsync(recipientEmail, recipientName, location, userAgent));
 
     private void QueuePasswordResetEmail(string recipientEmail, string? recipientName, string plainToken, DateTimeOffset expiresAtUtc) =>
         _ = Task.Run(() => SendPasswordResetEmailInBackgroundAsync(recipientEmail, recipientName, plainToken, expiresAtUtc));
@@ -313,14 +313,14 @@ public sealed class AuthService : IAuthService
         }
     }
 
-    private async Task SendLoginAlertEmailInBackgroundAsync(string recipientEmail, string? recipientName, string ipAddress, string userAgent)
+    private async Task SendLoginAlertEmailInBackgroundAsync(string recipientEmail, string? recipientName, string location, string userAgent)
     {
         try
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
             var emailEnabled = scope.ServiceProvider.GetRequiredService<IOptions<EmailNotificationOptions>>().Value.Enabled;
             var emails = scope.ServiceProvider.GetRequiredService<IEmailNotificationService>();
-            var notification = new LoginAlertNotification(recipientEmail, recipientName, ipAddress, userAgent, DateTimeOffset.UtcNow);
+            var notification = new LoginAlertNotification(recipientEmail, recipientName, location, userAgent, DateTimeOffset.UtcNow);
             
             await emails.SendLoginAlertAsync(notification, CancellationToken.None);
             
