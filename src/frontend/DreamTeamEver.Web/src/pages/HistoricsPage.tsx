@@ -3,9 +3,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { fetchMyPayments, type PaymentTransactionDto } from '../api/authApi'
 import { useAuth } from '../auth/useAuth'
+import { useLocale } from '../i18n/LocaleProvider'
+import { paymentStatusLabel } from '../i18n/paymentStatusLabel'
 
-function formatAmount(amount: number, currency: string): string {
-  return new Intl.NumberFormat(undefined, {
+function formatAmount(amount: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency || 'USD',
     minimumFractionDigits: 2,
@@ -14,14 +16,15 @@ function formatAmount(amount: number, currency: string): string {
 
 export function HistoricsPage() {
   const { user, getAccessToken } = useAuth()
+  const { locale, t } = useLocale()
   const query = useQuery<PaymentTransactionDto[], Error>({
     queryKey: ['member', 'payments', user?.id],
     enabled: Boolean(user?.id),
     queryFn: async () => {
       const token = await getAccessToken()
-      if (!token) throw new Error('Session expired. Please sign in again.')
+      if (!token) throw new Error(t('errors.sessionExpired'))
       const result = await fetchMyPayments(token)
-      if (!result.ok) throw new Error('Could not load your payment historics.')
+      if (!result.ok) throw new Error(t('historics.loadFailed'))
       return result.data
     },
   })
@@ -34,17 +37,17 @@ export function HistoricsPage() {
 
   return (
     <div className="font-dream-sans -mx-6 -mt-2 text-left">
-      <h1 className="font-dream-serif text-xl font-semibold text-stone-900">
-        Payment historics
+      <h1 className="font-dream-serif text-xl font-semibold text-stone-900 dark:text-white">
+        {t('historics.title')}
       </h1>
       <p className="mt-1 text-sm text-stone-500">
-        Overview of your transactions.
+        {t('historics.lead')}
       </p>
 
       {loading ? (
-        <p className="mt-6 text-sm text-stone-500">Loading payment historics…</p>
+        <p className="mt-6 text-sm text-stone-500">{t('historics.loading')}</p>
       ) : error ? (
-        <p className="mt-6 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 ring-1 ring-red-200/80">
+        <p className="mt-6 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 ring-1 ring-red-200/80 dark:bg-red-950/30 dark:text-red-200 dark:ring-red-900/40">
           {error}
         </p>
       ) : hasRows ? (
@@ -56,15 +59,15 @@ export function HistoricsPage() {
             >
               <div>
                 <p className="font-medium text-white">
-                  {row.method} payment
+                  {t('historics.paymentLine', { method: row.method })}
                 </p>
                 <p className="text-xs text-amber-100/90">
-                  {new Date(row.createdAt).toLocaleDateString()}
+                  {new Date(row.createdAt).toLocaleDateString(locale)}
                 </p>
               </div>
               <div className="text-right">
                 <p className="font-semibold text-white">
-                  {formatAmount(row.amount, row.currency)}
+                  {formatAmount(row.amount, row.currency, locale)}
                 </p>
                 <p
                   className={
@@ -75,7 +78,7 @@ export function HistoricsPage() {
                         : 'text-xs text-rose-200'
                   }
                 >
-                  {row.status}
+                  {paymentStatusLabel(t, row.status)}
                 </p>
               </div>
             </li>
@@ -83,16 +86,16 @@ export function HistoricsPage() {
         </ul>
       ) : (
         <p className="mt-6 text-sm text-stone-500">
-          No payments yet for this member.
+          {t('historics.empty')}
         </p>
       )}
 
       <p className="mt-8 text-center text-sm text-stone-500">
         <Link
           to="/home"
-          className="font-medium text-amber-800 underline-offset-4 hover:underline"
+          className="font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-300"
         >
-          Back to wallet
+          {t('common.backToWallet')}
         </Link>
       </p>
     </div>

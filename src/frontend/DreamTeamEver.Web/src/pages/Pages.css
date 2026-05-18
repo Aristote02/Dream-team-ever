@@ -40,7 +40,9 @@
   color: var(--text-h);
 }
 
-.field input {
+.field input,
+.field select,
+.field-select {
   font: inherit;
   padding: 10px 12px;
   border-radius: 8px;
@@ -49,7 +51,9 @@
   color: var(--text-h);
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus,
+.field-select:focus {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }

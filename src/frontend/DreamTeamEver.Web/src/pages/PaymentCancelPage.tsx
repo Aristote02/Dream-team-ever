@@ -1,15 +1,18 @@
 import { Link } from 'react-router-dom'
+import { useLocale } from '../i18n/LocaleProvider'
 import './Pages.css'
 
 export function PaymentCancelPage() {
+  const { t } = useLocale()
+
   return (
     <div className="page-stack">
-      <h1 className="page-title">Payment cancelled</h1>
+      <h1 className="page-title">{t('payment.cancelTitle')}</h1>
       <p className="page-lead">
-        No charge was completed. You can return to checkout when you are ready.
+        {t('payment.cancelLead')}
       </p>
       <Link to="/checkout" className="btn-primary">
-        Try again
+        {t('payment.tryAgain')}
       </Link>
     </div>
   )
