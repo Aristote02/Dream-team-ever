@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { fetchCurrentMember, updateMyProfileRequest } from "../api/authApi";
 import { useAuth } from "../auth/useAuth";
 import { authInputClassName } from "../components/authInputClass";
+import { useLocale } from "../i18n/LocaleProvider";
+
 type MemberView = {
   fullName: string;
   phone: string;
@@ -14,6 +16,7 @@ type MemberView = {
 
 export function ViewPage() {
   const { user, getAccessToken, refreshSession } = useAuth();
+  const { locale, t } = useLocale();
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -26,10 +29,10 @@ export function ViewPage() {
     queryFn: async () => {
       const token = await getAccessToken();
       if (!token) {
-        throw new Error("Session expired. Please sign in again.");
+        throw new Error(t("errors.sessionExpired"));
       }
       const me = await fetchCurrentMember(token);
-      if (!me.ok) throw new Error("Could not load your profile.");
+      if (!me.ok) throw new Error(t("view.loadFailed"));
       return me.data;
     },
   });
@@ -44,9 +47,9 @@ export function ViewPage() {
   const updateMutation = useMutation({
     mutationFn: async ({ nextFullName, nextPhone }: { nextFullName: string; nextPhone: string }) => {
       const token = await getAccessToken();
-      if (!token) throw new Error("Session expired. Please sign in again.");
+      if (!token) throw new Error(t("errors.sessionExpired"));
       const updated = await updateMyProfileRequest(token, nextFullName, nextPhone);
-      if (!updated.ok) throw new Error(updated.message ?? "Could not save your profile.");
+      if (!updated.ok) throw new Error(updated.message ?? t("view.saveFailed"));
       return updated.data;
     },
     onSuccess: async (updatedProfile) => {
@@ -62,14 +65,14 @@ export function ViewPage() {
     setSaved(false);
 
     if (!fullName.trim() || !phone.trim()) {
-      setError("Full name and phone are required.");
+      setError(t("validation.fullNamePhoneRequired"));
       return;
     }
 
     try {
       await updateMutation.mutateAsync({ nextFullName: fullName, nextPhone: phone });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save your profile.");
+      setError(err instanceof Error ? err.message : t("view.saveFailed"));
     }
   }
 
@@ -78,27 +81,28 @@ export function ViewPage() {
   const saving = updateMutation.isPending;
   const queryError = profileQuery.error instanceof Error ? profileQuery.error.message : null;
   const effectiveError = error ?? queryError;
+  const dash = t("common.dash");
 
   return (
     <div className="font-dream-sans -mx-6 -mt-2 text-left">
-      <h1 className="font-dream-serif text-xl font-semibold text-stone-900">View</h1>
-      <p className="mt-1 text-sm text-stone-500">Update your profile details below.</p>
+      <h1 className="font-dream-serif text-xl font-semibold text-stone-900 dark:text-white">{t("view.title")}</h1>
+      <p className="mt-1 text-sm text-stone-500">{t("view.lead")}</p>
 
       {!user ? (
-        <p className="mt-6 text-sm text-stone-600">
-          <Link to="/login" className="font-medium text-amber-800 underline-offset-4 hover:underline">
-            Sign in
+        <p className="mt-6 text-sm text-stone-600 dark:text-stone-300">
+          <Link to="/login" className="font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-300">
+            {t("common.signIn")}
           </Link>{" "}
-          to manage your profile.
+          {t("view.signInToManage")}
         </p>
       ) : loading ? (
-        <p className="mt-6 text-sm text-stone-500">Loading profile…</p>
+        <p className="mt-6 text-sm text-stone-500">{t("view.loading")}</p>
       ) : (
         <>
           <form className="mt-6 space-y-4" onSubmit={onSubmit}>
             <div>
-              <label htmlFor="full-name" className="mb-1.5 block text-sm font-medium text-stone-700">
-                Full name
+              <label htmlFor="full-name" className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
+                {t("common.fullName")}
               </label>
               <input
                 id="full-name"
@@ -111,13 +115,13 @@ export function ViewPage() {
                   setSaved(false);
                 }}
                 className={authInputClassName}
-                placeholder="Your full name"
+                placeholder={t("view.fullNamePlaceholder")}
               />
             </div>
 
             <div>
-              <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-stone-700">
-                Phone number
+              <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
+                {t("view.phoneNumber")}
               </label>
               <input
                 id="phone"
@@ -131,27 +135,27 @@ export function ViewPage() {
                   setSaved(false);
                 }}
                 className={authInputClassName}
-                placeholder="+243 …"
+                placeholder={t("view.phonePlaceholder")}
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Matricule code</label>
-              <input value={model?.matriculeCode ?? "—"} readOnly className={`${authInputClassName} cursor-not-allowed opacity-80`} />
+              <label className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{t("view.matriculeCode")}</label>
+              <input value={model?.matriculeCode ?? dash} readOnly className={`${authInputClassName} cursor-not-allowed opacity-80`} />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Matricule issued at</label>
+              <label className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{t("view.matriculeIssuedAt")}</label>
               <input
-                value={model?.matriculeIssuedAt ? new Date(model.matriculeIssuedAt).toLocaleString() : "—"}
+                value={model?.matriculeIssuedAt ? new Date(model.matriculeIssuedAt).toLocaleString(locale) : dash}
                 readOnly
                 className={`${authInputClassName} cursor-not-allowed opacity-80`}
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Created at</label>
-              <input value={model?.createdAt ? new Date(model.createdAt).toLocaleString() : "—"} readOnly className={`${authInputClassName} cursor-not-allowed opacity-80`} />
+              <label className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{t("view.createdAt")}</label>
+              <input value={model?.createdAt ? new Date(model.createdAt).toLocaleString(locale) : dash} readOnly className={`${authInputClassName} cursor-not-allowed opacity-80`} />
             </div>
 
             {effectiveError ? (
@@ -160,8 +164,8 @@ export function ViewPage() {
               </p>
             ) : null}
             {saved ? (
-              <p className="text-sm text-emerald-700" role="status">
-                Profile updated.
+              <p className="text-sm text-emerald-700 dark:text-emerald-400" role="status">
+                {t("view.updated")}
               </p>
             ) : null}
 
@@ -170,13 +174,13 @@ export function ViewPage() {
               disabled={saving}
               className="w-full rounded-lg bg-gradient-to-b from-amber-500 to-amber-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 disabled:opacity-60"
             >
-              {saving ? "Saving…" : "Save changes"}
+              {saving ? t("view.saving") : t("view.saveChanges")}
             </button>
           </form>
 
           <p className="mt-8 text-center text-sm text-stone-500">
-            <Link to="/home" className="font-medium text-amber-800 underline-offset-4 hover:underline">
-              Back to wallet
+            <Link to="/home" className="font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-300">
+              {t("common.backToWallet")}
             </Link>
           </p>
         </>

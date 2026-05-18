@@ -2,35 +2,34 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch, ApiError } from '../api/client'
 import type { CreateCheckoutPayload, CreateCheckoutResult } from '../types/payment'
+import { useLocale } from '../i18n/LocaleProvider'
 import './Pages.css'
 
 /** Change this path to match your backend (e.g. /payments/checkout-session). */
 const CREATE_CHECKOUT_PATH = '/api/payments/checkout'
 
+const PRICE_OPTIONS = [
+  { value: '50', amountCents: 5000, labelKey: 'checkout.price50' as const },
+  { value: '60', amountCents: 6000, labelKey: 'checkout.price60' as const },
+] as const
+
+type PriceValue = (typeof PRICE_OPTIONS)[number]['value']
 export function CheckoutPage() {
-  const [amount, setAmount] = useState('9.99')
-  const [currency, setCurrency] = useState('USD')
-  const [description, setDescription] = useState('Order payment')
+  const { t } = useLocale()
+  const [price, setPrice] = useState<PriceValue>('50')
+  const [description, setDescription] = useState(() => t('checkout.orderDescriptionDefault'))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const selectedPrice = PRICE_OPTIONS.find((option) => option.value === price) ?? PRICE_OPTIONS[0]
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    const amountNum = Number.parseFloat(amount)
-    if (!Number.isFinite(amountNum) || amountNum <= 0) {
-      setError('Enter a valid amount.')
-      setLoading(false)
-      return
-    }
-
-    const amountCents = Math.round(amountNum * 100)
-
     const payload: CreateCheckoutPayload = {
-      amountCents,
-      currency: currency.trim().toUpperCase() || 'USD',
+      amountCents: selectedPrice.amountCents,
+      currency: 'USD',
       description: description.trim() || undefined,
     }
 
@@ -44,7 +43,7 @@ export function CheckoutPage() {
       )
 
       if (!result?.url) {
-        setError('Backend did not return a redirect URL.')
+        setError(t('checkout.noRedirectUrl'))
         return
       }
 
@@ -54,7 +53,7 @@ export function CheckoutPage() {
         setError(err.message)
       } else {
         setError(
-          err instanceof Error ? err.message : 'Something went wrong.',
+          err instanceof Error ? err.message : t('checkout.somethingWrong'),
         )
       }
     } finally {
@@ -64,37 +63,29 @@ export function CheckoutPage() {
 
   return (
     <div className="page-stack">
-      <h1 className="page-title">Checkout</h1>
+      <h1 className="page-title">{t('checkout.title')}</h1>
       <p className="page-lead">
-        Submits a POST to <code>{CREATE_CHECKOUT_PATH}</code> and redirects to
-        the URL your API returns.
+        {t('checkout.lead', { path: CREATE_CHECKOUT_PATH })}
       </p>
 
       <form className="checkout-form" onSubmit={onSubmit}>
         <label className="field">
-          <span>Amount</span>
-          <input
-            type="text"
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            autoComplete="transaction-amount"
-          />
+          <span>{t('checkout.price')}</span>
+          <select
+            value={price}
+            onChange={(e) => setPrice(e.target.value as PriceValue)}
+            className="field-select"
+          >
+            {PRICE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {t(option.labelKey)}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="field">
-          <span>Currency</span>
-          <input
-            type="text"
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-            maxLength={3}
-            autoComplete="transaction-currency"
-          />
-        </label>
-
-        <label className="field">
-          <span>Description</span>
+          <span>{t('checkout.description')}</span>
           <input
             type="text"
             value={description}
@@ -105,7 +96,7 @@ export function CheckoutPage() {
         {error ? <p className="form-error">{error}</p> : null}
 
         <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? 'Starting payment…' : 'Pay'}
+          {loading ? t('checkout.processing') : t('checkout.pay')}
         </button>
       </form>
 
@@ -114,7 +105,7 @@ export function CheckoutPage() {
           to="/home"
           className="font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-300"
         >
-          Back to wallet
+          {t('checkout.backToWallet')}
         </Link>
       </p>
     </div>

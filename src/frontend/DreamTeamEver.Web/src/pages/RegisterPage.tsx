@@ -4,6 +4,8 @@ import { authInputClassName } from '../components/authInputClass'
 import { AuthScreenLayout } from '../components/AuthScreenLayout'
 import { useAuth } from '../auth/useAuth'
 
+import { useLocale } from '../i18n/LocaleProvider'
+import type { TranslationKey } from '../i18n/translations'
 type RegisterValues = {
   displayName: string
   email: string
@@ -14,40 +16,43 @@ type RegisterValues = {
 
 type RegisterFieldErrors = Partial<Record<keyof RegisterValues, string>>
 
-function validateRegister(values: RegisterValues): RegisterFieldErrors {
+function validateRegister(
+  values: RegisterValues,
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
+): RegisterFieldErrors {
   const errors: RegisterFieldErrors = {}
   const name = values.displayName.trim()
   const mail = values.email.trim()
   const tel = values.phone.trim()
 
   if (name.length < 2 || name.length > 200) {
-    errors.displayName = 'Full name must be between 2 and 200 characters.'
+    errors.displayName = t('validation.fullNameLength')
   }
 
   if (!mail) {
-    errors.email = 'Email is required.'
+    errors.email = t('validation.emailRequired')
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
-    errors.email = 'Please enter a valid email address.'
+    errors.email = t('validation.emailInvalid')
   }
 
   if (!tel) {
-    errors.phone = 'Phone number is required.'
+    errors.phone = t('validation.phoneRequired')
   } else if (!/^\d+$/.test(tel)) {
-    errors.phone = 'Phone number must contain digits only.'
+    errors.phone = t('validation.phoneDigitsOnly')
   } else if (tel.length < 6 || tel.length > 32) {
-    errors.phone = 'Phone number must be between 6 and 32 digits.'
+    errors.phone = t('validation.phoneLength')
   }
 
   if (!values.password) {
-    errors.password = 'Password is required.'
+    errors.password = t('validation.passwordRequired')
   } else if (values.password.length < 6) {
-    errors.password = 'Password must be at least 6 characters.'
+    errors.password = t('validation.passwordMin')
   }
 
   if (!values.confirm) {
-    errors.confirm = 'Please confirm your password.'
+    errors.confirm = t('validation.confirmRequired')
   } else if (values.password !== values.confirm) {
-    errors.confirm = 'Passwords do not match.'
+    errors.confirm = t('validation.passwordsMismatch')
   }
 
   return errors
@@ -56,6 +61,7 @@ function validateRegister(values: RegisterValues): RegisterFieldErrors {
 export function RegisterPage() {
   const navigate = useNavigate()
   const { user, register, authReady } = useAuth()
+  const { t } = useLocale()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -73,7 +79,7 @@ export function RegisterPage() {
     e.preventDefault()
     setError(null)
     const values: RegisterValues = { displayName, email, phone, password, confirm }
-    const nextErrors = validateRegister(values)
+    const nextErrors = validateRegister(values, t)
     setFieldErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
       return
@@ -85,11 +91,11 @@ export function RegisterPage() {
       if (result === 'ok') {
         navigate('/home', { replace: true })
       } else if (result === 'email-taken') {
-        setError('That email is already registered. Sign in instead.')
+        setError(t('register.emailTaken'))
       } else if (result === 'invalid') {
-        setError('Please fill in all fields.')
+        setError(t('register.fillAllFields'))
       } else {
-        setError('Could not reach the server. Is the API running?')
+        setError(t('errors.serverUnreachable'))
       }
     } finally {
       setSubmitting(false)
@@ -98,21 +104,21 @@ export function RegisterPage() {
 
   if (!authReady) {
     return (
-      <AuthScreenLayout subtitle="Join the team. Kinshasa · Estd 2025">
-        <p className="text-center text-sm text-stone-500">Loading…</p>
+      <AuthScreenLayout subtitle={t('register.subtitle')}>
+        <p className="text-center text-sm text-stone-500">{t('common.loading')}</p>
       </AuthScreenLayout>
     )
   }
 
   return (
-    <AuthScreenLayout subtitle="Join the team. Kinshasa · Estd 2025">
+    <AuthScreenLayout subtitle={t('register.subtitle')}>
       <form className="space-y-4 sm:space-y-5" onSubmit={onSubmit} noValidate>
         <div>
           <label
             htmlFor="register-name"
             className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
-            Full name
+            {t('common.fullName')}
           </label>
           <input
             id="register-name"
@@ -127,7 +133,7 @@ export function RegisterPage() {
               }
             }}
             className={authInputClassName}
-            placeholder="Your name"
+            placeholder={t('register.yourName')}
             required
           />
           {fieldErrors.displayName ? (
@@ -139,7 +145,7 @@ export function RegisterPage() {
             htmlFor="register-email"
             className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
-            Email
+            {t('common.email')}
           </label>
           <input
             id="register-email"
@@ -154,7 +160,7 @@ export function RegisterPage() {
               }
             }}
             className={authInputClassName}
-            placeholder="you@example.com"
+            placeholder={t('register.emailPlaceholder')}
             required
           />
           {fieldErrors.email ? (
@@ -166,7 +172,7 @@ export function RegisterPage() {
             htmlFor="register-phone"
             className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
-            Phone
+            {t('common.phone')}
           </label>
           <input
             id="register-phone"
@@ -183,7 +189,7 @@ export function RegisterPage() {
               }
             }}
             className={authInputClassName}
-            placeholder="243900000000"
+            placeholder={t('register.phonePlaceholder')}
             required
             minLength={6}
             maxLength={32}
@@ -198,7 +204,7 @@ export function RegisterPage() {
             htmlFor="register-password"
             className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
-            Password
+            {t('common.password')}
           </label>
           <input
             id="register-password"
@@ -217,8 +223,9 @@ export function RegisterPage() {
               }
             }}
             className={authInputClassName}
-            placeholder="At least 6 characters"
+            placeholder={t('register.passwordPlaceholder')}
             required
+
             minLength={6}
           />
           {fieldErrors.password ? (
@@ -230,7 +237,7 @@ export function RegisterPage() {
             htmlFor="register-confirm"
             className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
           >
-            Confirm password
+            {t('common.confirmPassword')}
           </label>
           <input
             id="register-confirm"
@@ -245,7 +252,7 @@ export function RegisterPage() {
               }
             }}
             className={authInputClassName}
-            placeholder="Repeat password"
+            placeholder={t('register.repeatPassword')}
             required
           />
           {fieldErrors.confirm ? (
@@ -255,7 +262,7 @@ export function RegisterPage() {
 
         {error ? (
           <p
-            className="rounded-lg bg-red-50 px-3 py-2 text-left text-sm text-red-800 ring-1 ring-red-200/80"
+            className="rounded-lg bg-red-50 px-3 py-2 text-left text-sm text-red-800 ring-1 ring-red-200/80 dark:bg-red-950/30 dark:text-red-200 dark:ring-red-900/40"
             role="alert"
           >
             {error}
@@ -267,17 +274,17 @@ export function RegisterPage() {
           disabled={submitting}
           className="w-full rounded-lg bg-gradient-to-b from-amber-500 to-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 disabled:opacity-60 sm:py-3"
         >
-          {submitting ? "Creating account…" : "Create account"}
+          {submitting ? t('register.creating') : t('common.createAccount')}
         </button>
       </form>
 
       <p className="mt-5 text-center text-sm text-stone-500 sm:mt-8">
-        Already have an account?{' '}
+        {t('register.alreadyHaveAccount')}{' '}
         <Link
           to="/login"
           className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
         >
-          Sign in
+          {t('common.signIn')}
         </Link>
       </p>
     </AuthScreenLayout>
