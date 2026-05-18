@@ -93,7 +93,7 @@ internal sealed class EmailNotificationService : IEmailNotificationService
         var html = _renderer.Render(TemplateNames.LoginAlert, new
         {
             recipientName = NameOrDefault(notification.RecipientName),
-            ipAddress = notification.IpAddress,
+            location = notification.Location,
             userAgent = notification.UserAgent,
             loggedInAtUtc = FormatUtc(notification.LoggedInAtUtc),
             logoSvgDataUri = _headerLogoUrl.Resolve()

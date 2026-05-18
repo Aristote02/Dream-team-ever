@@ -18,6 +18,8 @@ public static class WebApplicationExtensions
     /// </summary>
     public static WebApplication UseDreamTeamEver(this WebApplication app)
     {
+        app.UseForwardedHeaders();
+
         var supportedCultures = new[] { "en-US", "fr-FR" };
         var localizationOptions = new RequestLocalizationOptions()
             .SetDefaultCulture(supportedCultures[0])
@@ -50,7 +52,6 @@ public static class WebApplicationExtensions
             });
         }
 
-        app.UseForwardedHeaders();
         app.UseCors(DreamTeamEverCorsExtensions.AllowAllPolicy);
         
         app.UseExceptionHandler();

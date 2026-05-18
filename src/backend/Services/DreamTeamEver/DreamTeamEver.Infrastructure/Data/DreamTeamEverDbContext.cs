@@ -31,6 +31,7 @@ public class DreamTeamEverDbContext : DbContext
                 .WithOne(t => t.User)
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            e.Property(u => u.LastLoginLocationKey).HasMaxLength(16);
         });
 
         modelBuilder.Entity<Member>(e =>
