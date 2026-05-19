@@ -1,4 +1,7 @@
 import { apiUrl } from './apiBase'
+import type { PaymentTransactionDto, PaymentType } from '../types/payment'
+
+export type { PaymentTransactionDto }
 
 export type AuthResponseDto = {
   accessToken: string
@@ -21,20 +24,13 @@ export type MemberDto = {
   phone: string
   matriculeCode: string | null
   matriculeIssuedAt: string | null
-  createdAt: string
-}
-
-export type PaymentTransactionDto = {
-  id: string
-  memberFullName: string | null
-  method: string
-  amount: number
+  scolarFeeExpiresAt: string | null
+  registrationFeePaid: boolean
+  scolarFeeActive: boolean
+  nextPaymentType: PaymentType | null
+  nextPaymentAmount: number | null
   currency: string
-  status: string
-  providerReference: string | null
   createdAt: string
-  completedAt: string | null
-  failureReason: string | null
 }
 
 export type AdminMemberSummaryDto = {

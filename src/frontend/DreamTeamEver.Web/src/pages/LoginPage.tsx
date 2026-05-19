@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { authInputClassName } from "../components/authInputClass";
 import { AuthScreenLayout } from "../components/AuthScreenLayout";
@@ -34,11 +34,19 @@ function validateLogin(
   return errors;
 }
 
+type LoginLocationState = {
+  email?: string;
+  registered?: boolean;
+};
+
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, login, authReady } = useAuth();
   const { t } = useLocale();
-  const [email, setEmail] = useState("");
+  const loginState = (location.state as LoginLocationState | null) ?? {};
+  const [email, setEmail] = useState(() => loginState.email?.trim() ?? "");
+  const [registeredNotice] = useState(() => Boolean(loginState.registered));
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +87,14 @@ export function LoginPage() {
 
   return (
     <AuthScreenLayout subtitle={t("login.subtitle")}>
+      {registeredNotice ? (
+        <p
+          className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-left text-sm text-emerald-900 ring-1 ring-emerald-200/80 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/40"
+          role="status"
+        >
+          {t("login.accountCreated")}
+        </p>
+      ) : null}
       <form className="space-y-4 sm:space-y-5" onSubmit={onSubmit} noValidate>
         <div>
           <label htmlFor="login-email" className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300">

@@ -21,6 +21,32 @@
   font-size: 0.9rem;
 }
 
+.checkout-summary {
+  margin-top: 8px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--bg) 92%, var(--accent) 8%);
+  text-align: center;
+}
+
+.checkout-summary-label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.checkout-summary-amount {
+  margin: 8px 0 0;
+  font-family: var(--font-dream-serif), Georgia, serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
 .checkout-form {
   display: flex;
   flex-direction: column;
