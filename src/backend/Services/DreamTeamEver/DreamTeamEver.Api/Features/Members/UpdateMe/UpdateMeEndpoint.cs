@@ -9,8 +9,13 @@ namespace DreamTeamEver.Api.Features.Members.UpdateMe;
 public sealed class UpdateMeEndpoint : Endpoint<UpdateMyProfileRequest, MemberDto>
 {
     private readonly IMemberService _members;
+    private readonly IStudentEnrollmentService _enrollment;
 
-    public UpdateMeEndpoint(IMemberService members) => _members = members;
+    public UpdateMeEndpoint(IMemberService members, IStudentEnrollmentService enrollment)
+    {
+        _members = members;
+        _enrollment = enrollment;
+    }
 
     public override void Configure()
     {
@@ -24,6 +29,7 @@ public sealed class UpdateMeEndpoint : Endpoint<UpdateMyProfileRequest, MemberDt
         if (member is null) 
             return;
 
-        await Send.OkAsync(member.ToMemberDto(), ct);
+        var status = await _enrollment.GetStatusAsync(member, ct);
+        await Send.OkAsync(member.ToMemberDto(status), ct);
     }
 }

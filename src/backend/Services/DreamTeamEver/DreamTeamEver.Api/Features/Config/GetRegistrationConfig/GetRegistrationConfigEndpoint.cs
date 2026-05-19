@@ -16,11 +16,11 @@ public sealed class GetRegistrationConfigEndpoint : EndpointWithoutRequest<Regis
     {
         Get("/api/config/registration");
         AllowAnonymous();
-        Summary(s => s.Description = "Registration fee and currency for the checkout UI (Mpesa integration pending).");
+        Summary(s => s.Description = "Registration and scolar fees for the checkout UI (Mpesa integration pending).");
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        await Send.OkAsync(new RegistrationConfigDto(_options.RegistrationFee, _options.Currency), ct);
+        await Send.OkAsync(new RegistrationConfigDto(_options.RegistrationFee, _options.ScolarFee, _options.ScolarFeeValidityDays, _options.Currency), ct);
     }
 }
