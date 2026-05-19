@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, type RootState } from '@react-three/fiber'
 import {
   Environment,
   Float,
@@ -12,7 +12,7 @@ import type { Group, Mesh } from 'three'
 
 function GoldOrb() {
   const ref = useRef<Mesh>(null)
-  useFrame((state) => {
+  useFrame((state: RootState) => {
     if (!ref.current) return
     ref.current.rotation.x = state.clock.elapsedTime * 0.18
     ref.current.rotation.y = state.clock.elapsedTime * 0.25
@@ -36,7 +36,7 @@ function GoldOrb() {
 
 function Rings() {
   const group = useRef<Group>(null)
-  useFrame((state) => {
+  useFrame((state: RootState) => {
     if (!group.current) return
     group.current.rotation.z = state.clock.elapsedTime * 0.15
     group.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.2
@@ -76,7 +76,7 @@ function Rings() {
 
 function OrbitingShards() {
   const group = useRef<Group>(null)
-  useFrame((state) => {
+  useFrame((state: RootState) => {
     if (!group.current) return
     group.current.rotation.y = state.clock.elapsedTime * 0.4
   })
