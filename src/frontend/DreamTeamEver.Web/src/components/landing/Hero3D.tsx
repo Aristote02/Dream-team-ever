@@ -118,6 +118,43 @@ export function Hero3D() {
               {t('landing.hero.ctaSecondary')}
             </Link>
           </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.65 }}
+            className="mt-12 flex flex-wrap items-stretch"
+            role="group"
+            aria-label="Statistics"
+          >
+            {(
+              [
+                {
+                  value: t('landing.hero.statMembersValue'),
+                  label: t('landing.hero.statMembers'),
+                },
+                {
+                  value: t('landing.hero.statUptimeValue'),
+                  label: t('landing.hero.statUptime'),
+                },
+                {
+                  value: t('landing.hero.statSupportValue'),
+                  label: t('landing.hero.statSupport'),
+                },
+              ] as const
+            ).map((stat, index) => (
+              <div key={stat.label} className="flex items-stretch">
+                {index > 0 ? (
+                  <div className="landing-hero-stat-divider mx-6 sm:mx-10" aria-hidden />
+                ) : null}
+                <div>
+                  <p className="font-display text-3xl leading-none gold-text sm:text-4xl">{stat.value}</p>
+                  <p className="l-muted mt-2 text-[10px] font-bold uppercase tracking-[0.28em]">
+                    {stat.label}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
         </div>
 
         <div
@@ -178,11 +215,11 @@ export function Hero3D() {
             <motion.div
               animate={{ y: [0, 14, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              className="glass-card absolute -bottom-6 -left-4 flex flex-col items-start gap-2 rounded-2xl px-5 py-4 sm:-left-10"
+              className="landing-payment-card absolute -bottom-6 -left-4 flex flex-col items-start gap-3 rounded-2xl px-5 py-4 sm:-left-10"
               style={{ transform: 'translateZ(60px)' }}
             >
-              <PaymentCardIcon className="size-6 text-amber-400" />
-              <p className="font-display text-xl leading-none gold-text sm:text-2xl">
+              <PaymentCardIcon className="landing-payment-icon size-6" />
+              <p className="font-display text-xl leading-none tracking-tight landing-payment-label sm:text-2xl">
                 {t('landing.hero.cardPaidMethods')}
               </p>
             </motion.div>
