@@ -75,12 +75,11 @@ export function LandingPage() {
                   decoding="async"
                 />
               </div>
-              <div className="glass-card flex aspect-square flex-col justify-between rounded-3xl p-6">
-                <PaymentCardIcon className="size-7 text-amber-400" />
-                <div>
-                  <p className="font-display text-2xl leading-none gold-text">M-Pesa</p>
-                  <p className="l-muted mt-2 text-xs">{t('landing.what.paymentsNote')}</p>
-                </div>
+              <div className="landing-payment-card flex aspect-square flex-col items-start gap-4 rounded-3xl p-6 sm:p-7">
+                <PaymentCardIcon className="landing-payment-icon size-7" />
+                <p className="font-display text-2xl leading-none tracking-tight landing-payment-label">
+                  M-Pesa
+                </p>
               </div>
               <div className="l-border aspect-[4/5] overflow-hidden rounded-3xl border bg-stone-200 dark:bg-stone-900">
                 <img
