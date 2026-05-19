@@ -34,7 +34,8 @@ public static class DatabaseExtension
 
                 optionsBuilder.UseNpgsql(connectionString, o =>
                 {
-                    o.EnableRetryOnFailure();
+                    // EnableRetryOnFailure conflicts with explicit transactions in payment/matricule flows.
+                    o.CommandTimeout(120);
                     if (!string.IsNullOrWhiteSpace(assemblyName))
                     {
                         o.MigrationsAssembly(assemblyName);
