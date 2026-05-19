@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { fetchMyPayments, type PaymentTransactionDto } from '../api/authApi'
+import { paymentTypeLabel } from '../i18n/paymentTypeLabel'
 import { useAuth } from '../auth/useAuth'
 import { useLocale } from '../i18n/LocaleProvider'
 import { paymentStatusLabel } from '../i18n/paymentStatusLabel'
@@ -59,7 +60,10 @@ export function HistoricsPage() {
             >
               <div>
                 <p className="font-medium text-white">
-                  {t('historics.paymentLine', { method: row.method })}
+                  {t('historics.paymentLine', {
+                    type: paymentTypeLabel(t, row.paymentType),
+                    method: row.method,
+                  })}
                 </p>
                 <p className="text-xs text-amber-100/90">
                   {new Date(row.createdAt).toLocaleDateString(locale)}

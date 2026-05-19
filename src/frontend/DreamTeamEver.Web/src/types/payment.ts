@@ -1,12 +1,38 @@
-/** Rename or extend these to match your backend contract. */
+/** Backend enums are serialized as strings (JsonStringEnumConverter). */
 
-export type CreateCheckoutPayload = {
-  amountCents: number
+export type PaymentType = 'Registration' | 'ScolarFee'
+
+export type PaymentMethod = 'Mpesa' | 'OrangeMoney'
+
+export type PaymentStatus = 'Pending' | 'Completed' | 'Failed' | 'Cancelled'
+
+export type RegistrationConfigDto = {
+  registrationFee: number
+  scolarFee: number
+  scolarFeeValidityDays: number
   currency: string
-  description?: string
 }
 
-/** Typical pattern: backend returns a URL to redirect the user (e.g. Stripe Checkout). */
-export type CreateCheckoutResult = {
-  url: string
+export type InitiatePaymentRequest = {
+  memberId: string
+  method: PaymentMethod
+}
+
+export type PaymentTransactionDto = {
+  id: string
+  memberFullName: string | null
+  paymentType: PaymentType
+  method: PaymentMethod
+  amount: number
+  currency: string
+  status: PaymentStatus
+  providerReference: string | null
+  createdAt: string
+  completedAt: string | null
+  failureReason: string | null
+}
+
+export type PaymentConfirmationDto = {
+  matriculeCode: string | null
+  transaction: PaymentTransactionDto | null
 }

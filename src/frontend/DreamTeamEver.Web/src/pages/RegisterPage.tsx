@@ -89,7 +89,10 @@ export function RegisterPage() {
     try {
       const result = await register(displayName, email, phone, password)
       if (result === 'ok') {
-        navigate('/home', { replace: true })
+        navigate('/login', {
+          replace: true,
+          state: { email: email.trim(), registered: true },
+        })
       } else if (result === 'email-taken') {
         setError(t('register.emailTaken'))
       } else if (result === 'invalid') {
