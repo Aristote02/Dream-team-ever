@@ -13,32 +13,23 @@ public sealed class MatriculeService : IMatriculeService
 
     public async Task<string?> TryIssueMatriculeAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        await using var tx = await _members.BeginTransactionAsync(cancellationToken);
-
         var member = await _members.GetTrackedByIdAsync(memberId, cancellationToken);
 
         if (member is null)
             return null;
 
         if (!string.IsNullOrEmpty(member.MatriculeCode))
-        {
-            await tx.CommitAsync(cancellationToken);
             return member.MatriculeCode;
-        }
 
         var code = await AllocateUniqueMatriculeCodeAsync(cancellationToken);
         member.MatriculeCode = code;
         member.MatriculeIssuedAt = DateTimeOffset.UtcNow;
-        await _members.SaveChangesAsync(cancellationToken);
-        await tx.CommitAsync(cancellationToken);
 
         return code;
     }
 
     public async Task<string?> RegenerateMatriculeAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        await using var tx = await _members.BeginTransactionAsync(cancellationToken);
-
         var member = await _members.GetTrackedByIdAsync(memberId, cancellationToken);
 
         if (member is null)
@@ -47,9 +38,6 @@ public sealed class MatriculeService : IMatriculeService
         var code = await AllocateUniqueMatriculeCodeAsync(cancellationToken);
         member.MatriculeCode = code;
         member.MatriculeIssuedAt = DateTimeOffset.UtcNow;
-        
-        await _members.SaveChangesAsync(cancellationToken);
-        await tx.CommitAsync(cancellationToken);
 
         return code;
     }

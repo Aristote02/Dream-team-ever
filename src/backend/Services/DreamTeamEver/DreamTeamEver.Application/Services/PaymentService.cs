@@ -75,18 +75,13 @@ public sealed class PaymentService : IPaymentService
 
     public async Task<PaymentResult> ConfirmAsync(Guid transactionId, CancellationToken cancellationToken = default)
     {
-        await using var dbTx = await _payments.BeginTransactionAsync(cancellationToken);
-
         var payment = await _payments.GetByIdWithMemberAsync(transactionId, cancellationToken);
 
         if (payment is null)
             return new PaymentResult(false, null, "Payment not found.");
 
         if (payment.Status == PaymentStatus.Completed)
-        {
-            await dbTx.CommitAsync(cancellationToken);
             return new PaymentResult(true, payment.Member.MatriculeCode, null);
-        }
 
         if (payment.Status != PaymentStatus.Pending)
             return new PaymentResult(false, null, "Payment is not pending.");
@@ -111,7 +106,6 @@ public sealed class PaymentService : IPaymentService
                 }
                 catch (Exception ex)
                 {
-                    await dbTx.RollbackAsync(cancellationToken);
                     return new PaymentResult(false, null, ex.Message);
                 }
 
@@ -119,12 +113,10 @@ public sealed class PaymentService : IPaymentService
                 break;
 
             default:
-                await dbTx.RollbackAsync(cancellationToken);
                 return new PaymentResult(false, null, "Unknown payment type.");
         }
 
         await _payments.SaveChangesAsync(cancellationToken);
-        await dbTx.CommitAsync(cancellationToken);
 
         await NotifyPaymentConfirmedAsync(payment, cancellationToken);
         if (payment.PaymentType == PaymentType.ScolarFee && !string.IsNullOrWhiteSpace(matricule))
