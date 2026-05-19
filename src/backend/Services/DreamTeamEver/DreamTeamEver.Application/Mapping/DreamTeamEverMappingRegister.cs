@@ -20,9 +20,6 @@ public sealed class DreamTeamEverMappingRegister : IRegister
             .Map(dest => dest.Email, src => src.User.Email)
             .Map(dest => dest.Role, src => src.User.Role);
 
-        config.NewConfig<Member, MemberDto>()
-            .Map(dest => dest.Email, src => src.User.Email);
-
         config.NewConfig<PaymentTransaction, PaymentTransactionDto>()
             .Map(dest => dest.MemberFullName, src => src.Member == null ? null : src.Member.FullName);
     }

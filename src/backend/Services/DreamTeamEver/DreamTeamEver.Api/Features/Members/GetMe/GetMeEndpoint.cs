@@ -10,8 +10,13 @@ namespace DreamTeamEver.Api.Features.Members.GetMe;
 public sealed class GetMeEndpoint : EndpointWithoutRequest<MemberDto>
 {
     private readonly IMemberService _members;
+    private readonly IStudentEnrollmentService _enrollment;
 
-    public GetMeEndpoint(IMemberService members) => _members = members;
+    public GetMeEndpoint(IMemberService members, IStudentEnrollmentService enrollment)
+    {
+        _members = members;
+        _enrollment = enrollment;
+    }
 
     public override void Configure()
     {
@@ -28,6 +33,7 @@ public sealed class GetMeEndpoint : EndpointWithoutRequest<MemberDto>
             return;
         }
 
-        await Send.OkAsync(member.ToMemberDto(), ct);
+        var status = await _enrollment.GetStatusAsync(member, ct);
+        await Send.OkAsync(member.ToMemberDto(status), ct);
     }
 }

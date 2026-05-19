@@ -14,6 +14,7 @@ public sealed class PaymentService : IPaymentService
     private readonly IMemberRepository _members;
     private readonly IPaymentTransactionRepository _payments;
     private readonly IMatriculeService _matricules;
+    private readonly IStudentEnrollmentService _enrollment;
     private readonly IEmailNotificationService _emailNotifications;
     private readonly DreamTeamEverOptions _options;
 
@@ -21,12 +22,14 @@ public sealed class PaymentService : IPaymentService
         IMemberRepository members,
         IPaymentTransactionRepository payments,
         IMatriculeService matricules,
+        IStudentEnrollmentService enrollment,
         IEmailNotificationService emailNotifications,
         IOptions<DreamTeamEverOptions> options)
     {
         _members = members;
         _payments = payments;
         _matricules = matricules;
+        _enrollment = enrollment;
         _emailNotifications = emailNotifications;
         _options = options.Value;
     }
@@ -34,19 +37,24 @@ public sealed class PaymentService : IPaymentService
     public async Task<PaymentTransaction?> InitiateAsync(Guid memberId, PaymentMethod method, CancellationToken cancellationToken = default)
     {
         var member = await _members.GetTrackedByIdAsync(memberId, cancellationToken);
-        if (member is null || !string.IsNullOrEmpty(member.MatriculeCode))
+        if (member is null)
             return null;
 
         var existingPending = await _payments.FindLatestPendingByMemberAsync(memberId, cancellationToken);
         if (existingPending is not null)
             return existingPending;
 
+        var nextType = await _enrollment.GetNextPaymentTypeAsync(member, cancellationToken);
+        if (nextType is null)
+            return null;
+
         var tx = new PaymentTransaction
         {
             Id = Guid.NewGuid(),
             MemberId = memberId,
             Method = method,
-            Amount = _options.RegistrationFee,
+            PaymentType = nextType.Value,
+            Amount = _enrollment.GetFeeAmount(nextType.Value),
             Currency = _options.Currency,
             Status = PaymentStatus.Pending,
             ProviderReference = $"PENDING-{Guid.NewGuid():N}"[..24],
@@ -62,8 +70,8 @@ public sealed class PaymentService : IPaymentService
     public Task<PaymentTransaction?> GetTransactionAsync(Guid transactionId, CancellationToken cancellationToken = default) =>
         _payments.GetByIdWithMemberAsync(transactionId, cancellationToken);
 
-
-    public async Task<IReadOnlyList<PaymentTransaction>> ListTransactionsByUserAsync(Guid userId, CancellationToken cancellationToken = default) => await _payments.ListByUserCreatedDescAsync(userId, cancellationToken);
+    public async Task<IReadOnlyList<PaymentTransaction>> ListTransactionsByUserAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        await _payments.ListByUserCreatedDescAsync(userId, cancellationToken);
 
     public async Task<PaymentResult> ConfirmAsync(Guid transactionId, CancellationToken cancellationToken = default)
     {
@@ -87,23 +95,39 @@ public sealed class PaymentService : IPaymentService
         payment.CompletedAt = DateTimeOffset.UtcNow;
         payment.ProviderReference = $"OK-{Guid.NewGuid():N}"[..20];
 
+        string? matricule = payment.Member.MatriculeCode;
+
+        switch (payment.PaymentType)
+        {
+            case PaymentType.Registration:
+                break;
+
+            case PaymentType.ScolarFee:
+                try
+                {
+                    matricule = string.IsNullOrEmpty(payment.Member.MatriculeCode)
+                        ? await _matricules.TryIssueMatriculeAsync(payment.MemberId, cancellationToken)
+                        : await _matricules.RegenerateMatriculeAsync(payment.MemberId, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    await dbTx.RollbackAsync(cancellationToken);
+                    return new PaymentResult(false, null, ex.Message);
+                }
+
+                await _enrollment.ExtendScolarFeeAsync(payment.Member, cancellationToken);
+                break;
+
+            default:
+                await dbTx.RollbackAsync(cancellationToken);
+                return new PaymentResult(false, null, "Unknown payment type.");
+        }
+
         await _payments.SaveChangesAsync(cancellationToken);
-
-        string? matricule;
-        try
-        {
-            matricule = await _matricules.TryIssueMatriculeAsync(payment.MemberId, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            await dbTx.RollbackAsync(cancellationToken);
-            return new PaymentResult(false, null, ex.Message);
-        }
-
         await dbTx.CommitAsync(cancellationToken);
 
         await NotifyPaymentConfirmedAsync(payment, cancellationToken);
-        if (!string.IsNullOrWhiteSpace(matricule))
+        if (payment.PaymentType == PaymentType.ScolarFee && !string.IsNullOrWhiteSpace(matricule))
         {
             await NotifyMatriculeIssuedAsync(payment, matricule!, cancellationToken);
         }

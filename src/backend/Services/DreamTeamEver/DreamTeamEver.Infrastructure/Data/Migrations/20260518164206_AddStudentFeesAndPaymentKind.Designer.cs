@@ -3,6 +3,7 @@ using System;
 using DreamTeamEver.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DreamTeamEver.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(DreamTeamEverDbContext))]
-    partial class DreamTeamEverDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518164206_AddStudentFeesAndPaymentKind")]
+    partial class AddStudentFeesAndPaymentKind
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,7 +63,7 @@ namespace DreamTeamEver.Infrastructure.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Members", (string)null);
+                    b.ToTable("Members");
                 });
 
             modelBuilder.Entity("DreamTeamEver.Domain.Entities.PaymentTransaction", b =>
@@ -105,7 +108,7 @@ namespace DreamTeamEver.Infrastructure.Data.Migrations
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("PaymentTransactions", (string)null);
+                    b.ToTable("PaymentTransactions");
                 });
 
             modelBuilder.Entity("DreamTeamEver.Domain.Entities.RefreshToken", b =>
@@ -136,7 +139,7 @@ namespace DreamTeamEver.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("DreamTeamEver.Domain.Entities.User", b =>
@@ -174,7 +177,7 @@ namespace DreamTeamEver.Infrastructure.Data.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("DreamTeamEver.Domain.Entities.Member", b =>
