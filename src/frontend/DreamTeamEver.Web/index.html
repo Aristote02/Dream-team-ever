@@ -13,6 +13,17 @@
     <title>The Dream Team Ever</title>
   </head>
   <body>
+    <script>
+      ;(function () {
+        var stored = localStorage.getItem('dreamteam-theme')
+        var dark =
+          stored === 'dark' ||
+          (stored !== 'light' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
