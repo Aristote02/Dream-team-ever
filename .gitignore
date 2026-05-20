@@ -61,6 +61,11 @@ bld/
 [Oo]ut/
 /artifacts/
 
+# Local DB migration backups (contain user data)
+backup-render.sql
+backup-supabase.sql
+*.pgdump
+
 # MSBuild logs
 msbuild.log
 msbuild.err

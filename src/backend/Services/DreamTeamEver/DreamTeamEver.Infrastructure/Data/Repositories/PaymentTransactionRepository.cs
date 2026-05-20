@@ -18,6 +18,10 @@ public sealed class PaymentTransactionRepository : Repository<PaymentTransaction
             .OrderByDescending(p => p.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
 
+    public Task<bool> HasCompletedPaymentAsync(Guid memberId, PaymentType paymentType, CancellationToken cancellationToken) =>
+        Query().AsNoTracking()
+            .AnyAsync(p => p.MemberId == memberId && p.PaymentType == paymentType && p.Status == PaymentStatus.Completed, cancellationToken);
+
     public Task<PaymentTransaction?> GetByIdWithMemberAsync(Guid id, CancellationToken cancellationToken) =>
         Query()
             .Include(p => p.Member)

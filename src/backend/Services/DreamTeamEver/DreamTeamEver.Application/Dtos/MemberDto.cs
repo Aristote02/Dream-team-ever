@@ -1,3 +1,5 @@
+using DreamTeamEver.Domain.Enums;
+
 namespace DreamTeamEver.Application.Dtos;
 
 public record MemberDto(
@@ -8,4 +10,10 @@ public record MemberDto(
     string Phone,
     string? MatriculeCode,
     DateTimeOffset? MatriculeIssuedAt,
+    DateTimeOffset? ScolarFeeExpiresAt,
+    bool RegistrationFeePaid,
+    bool ScolarFeeActive,
+    PaymentType? NextPaymentType,
+    decimal? NextPaymentAmount,
+    string Currency,
     DateTimeOffset CreatedAt);
