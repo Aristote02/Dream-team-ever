@@ -1,105 +1,116 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/useAuth";
-import { authInputClassName } from "../components/authInputClass";
-import { AuthScreenLayout } from "../components/AuthScreenLayout";
-import { useLocale } from "../i18n/LocaleProvider";
-import type { TranslationKey } from "../i18n/translations";
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth/useAuth'
+import {
+  authInputClassName,
+  authLinkClassName,
+  authPrimaryButtonClassName,
+} from '../components/authInputClass'
+import { AuthFormField } from '../components/auth/AuthFormField'
+import { AuthScreenLayout } from '../components/AuthScreenLayout'
+import { useLocale } from '../i18n/LocaleProvider'
+import type { TranslationKey } from '../i18n/translations'
 
 type LoginValues = {
-  email: string;
-  password: string;
-};
+  email: string
+  password: string
+}
 
-type LoginFieldErrors = Partial<Record<keyof LoginValues, string>>;
+type LoginFieldErrors = Partial<Record<keyof LoginValues, string>>
+
+type LoginLocationState = {
+  email?: string
+  registered?: boolean
+}
 
 function validateLogin(
   values: LoginValues,
   t: (key: TranslationKey) => string,
 ): LoginFieldErrors {
-  const errors: LoginFieldErrors = {};
-  const mail = values.email.trim();
+  const errors: LoginFieldErrors = {}
+  const mail = values.email.trim()
   if (!mail) {
-    errors.email = t("validation.emailRequired");
+    errors.email = t('validation.emailRequired')
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
-    errors.email = t("validation.emailInvalid");
+    errors.email = t('validation.emailInvalid')
   }
 
   if (!values.password) {
-    errors.password = t("validation.passwordRequired");
+    errors.password = t('validation.passwordRequired')
   } else if (values.password.length < 6) {
-    errors.password = t("validation.passwordMin");
+    errors.password = t('validation.passwordMin')
   }
 
-  return errors;
+  return errors
 }
 
-type LoginLocationState = {
-  email?: string;
-  registered?: boolean;
-};
-
 export function LoginPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, login, authReady } = useAuth();
-  const { t } = useLocale();
-  const loginState = (location.state as LoginLocationState | null) ?? {};
-  const [email, setEmail] = useState(() => loginState.email?.trim() ?? "");
-  const [registeredNotice] = useState(() => Boolean(loginState.registered));
-  const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { user, login, authReady } = useAuth()
+  const { t } = useLocale()
+  const loginState = (location.state as LoginLocationState | null) ?? {}
+  const [email, setEmail] = useState(() => loginState.email?.trim() ?? '')
+  const [registeredNotice] = useState(() => Boolean(loginState.registered))
+  const [password, setPassword] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({})
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    if (authReady && user) navigate("/home", { replace: true });
-  }, [user, authReady, navigate]);
+    if (authReady && user) navigate('/home', { replace: true })
+  }, [user, authReady, navigate])
 
   async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const nextErrors = validateLogin({ email, password }, t);
-    setFieldErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
-    setSubmitting(true);
+    e.preventDefault()
+    setError(null)
+    const nextErrors = validateLogin({ email, password }, t)
+    setFieldErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) return
+    setSubmitting(true)
     try {
-      const result = await login(email, password);
-      if (result === "ok") {
-        navigate("/home", { replace: true });
-      } else if (result === "invalid") {
-        setError(t("errors.invalidCredentials"));
+      const result = await login(email, password)
+      if (result === 'ok') {
+        navigate('/home', { replace: true })
+      } else if (result === 'invalid') {
+        setError(t('errors.invalidCredentials'))
       } else {
-        setError(t("errors.serverUnreachable"));
+        setError(t('errors.serverUnreachable'))
       }
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
   }
 
   if (!authReady) {
     return (
-      <AuthScreenLayout subtitle={t("login.subtitle")}>
-        <p className="text-center text-sm text-stone-500">{t("common.loading")}</p>
+      <AuthScreenLayout title={t('login.title')} lead={t('login.lead')}>
+        <p className="auth-screen-lead">{t('common.loading')}</p>
       </AuthScreenLayout>
-    );
+    )
   }
 
   return (
-    <AuthScreenLayout subtitle={t("login.subtitle")}>
+    <AuthScreenLayout
+      title={t('login.title')}
+      lead={t('login.lead')}
+      footer={
+        <>
+          {t('login.noAccount')}{' '}
+          <Link to="/register" className={authLinkClassName}>
+            {t('common.createAccount')}
+          </Link>
+        </>
+      }
+    >
       {registeredNotice ? (
-        <p
-          className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-left text-sm text-emerald-900 ring-1 ring-emerald-200/80 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900/40"
-          role="status"
-        >
-          {t("login.accountCreated")}
+        <p className="auth-alert auth-alert-success mb-4" role="status">
+          {t('login.accountCreated')}
         </p>
       ) : null}
-      <form className="space-y-4 sm:space-y-5" onSubmit={onSubmit} noValidate>
-        <div>
-          <label htmlFor="login-email" className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300">
-            {t("common.email")}
-          </label>
+
+      <form className="auth-form" onSubmit={onSubmit} noValidate>
+        <AuthFormField id="login-email" label={t('common.email')} error={fieldErrors.email}>
           <input
             id="login-email"
             name="email"
@@ -107,21 +118,16 @@ export function LoginPage() {
             autoComplete="email"
             value={email}
             onChange={(e) => {
-              setEmail(e.target.value);
-              if (fieldErrors.email) {
-                setFieldErrors((prev) => ({ ...prev, email: undefined }));
-              }
+              setEmail(e.target.value)
+              if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
             }}
             className={authInputClassName}
-            placeholder="you@example.com"
+            placeholder={t('register.emailPlaceholder')}
             required
           />
-          {fieldErrors.email ? <p className="mt-1 text-xs text-red-700">{fieldErrors.email}</p> : null}
-        </div>
-        <div>
-          <label htmlFor="login-password" className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300">
-            {t("common.password")}
-          </label>
+        </AuthFormField>
+
+        <AuthFormField id="login-password" label={t('common.password')} error={fieldErrors.password}>
           <input
             id="login-password"
             name="password"
@@ -129,43 +135,31 @@ export function LoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => {
-              setPassword(e.target.value);
-              if (fieldErrors.password) {
-                setFieldErrors((prev) => ({ ...prev, password: undefined }));
-              }
+              setPassword(e.target.value)
+              if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }))
             }}
             className={authInputClassName}
-            placeholder="••••••••"
+            placeholder={t('forgot.passwordPlaceholder')}
             required
           />
-          {fieldErrors.password ? <p className="mt-1 text-xs text-red-700">{fieldErrors.password}</p> : null}
-          <p className="mt-2 text-right text-sm">
-            <Link to="/forgot-password" className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline dark:text-amber-300 dark:hover:text-amber-200">
-              {t("login.forgotPassword")}
-            </Link>
-          </p>
-        </div>
+        </AuthFormField>
+
+        <p className="auth-link-row">
+          <Link to="/forgot-password" className={authLinkClassName}>
+            {t('login.forgotPassword')}
+          </Link>
+        </p>
 
         {error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-left text-sm text-red-800 ring-1 ring-red-200/80" role="alert">
+          <p className="auth-alert auth-alert-error" role="alert">
             {error}
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-lg bg-gradient-to-b from-amber-500 to-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 disabled:opacity-60 sm:py-3"
-        >
-          {submitting ? t("login.signingIn") : t("common.signIn")}
+        <button type="submit" disabled={submitting} className={authPrimaryButtonClassName}>
+          {submitting ? t('login.signingIn') : t('common.signIn')}
         </button>
       </form>
-
-      <p className="mt-5 text-center text-sm text-stone-500 sm:mt-8">
-        <Link to="/register" className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline dark:text-amber-300 dark:hover:text-amber-200">
-          {t("common.createAccount")}
-        </Link>
-      </p>
     </AuthScreenLayout>
-  );
+  )
 }

@@ -1,9 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { authInputClassName } from '../components/authInputClass'
+import {
+  authInputClassName,
+  authLinkClassName,
+  authPrimaryButtonClassName,
+} from '../components/authInputClass'
+import { AuthFormField } from '../components/auth/AuthFormField'
 import { AuthScreenLayout } from '../components/AuthScreenLayout'
 import { useAuth } from '../auth/useAuth'
-
 import { useLocale } from '../i18n/LocaleProvider'
 import type { TranslationKey } from '../i18n/translations'
 type RegisterValues = {
@@ -107,22 +111,27 @@ export function RegisterPage() {
 
   if (!authReady) {
     return (
-      <AuthScreenLayout subtitle={t('register.subtitle')}>
-        <p className="text-center text-sm text-stone-500">{t('common.loading')}</p>
+      <AuthScreenLayout title={t('register.title')} lead={t('register.lead')}>
+        <p className="auth-screen-lead">{t('common.loading')}</p>
       </AuthScreenLayout>
     )
   }
 
   return (
-    <AuthScreenLayout subtitle={t('register.subtitle')}>
-      <form className="space-y-4 sm:space-y-5" onSubmit={onSubmit} noValidate>
-        <div>
-          <label
-            htmlFor="register-name"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
-          >
-            {t('common.fullName')}
-          </label>
+    <AuthScreenLayout
+      title={t('register.title')}
+      lead={t('register.lead')}
+      footer={
+        <>
+          {t('register.alreadyHaveAccount')}{' '}
+          <Link to="/login" className={authLinkClassName}>
+            {t('common.signIn')}
+          </Link>
+        </>
+      }
+    >
+      <form className="auth-form" onSubmit={onSubmit} noValidate>
+        <AuthFormField id="register-name" label={t('common.fullName')} error={fieldErrors.displayName}>
           <input
             id="register-name"
             name="displayName"
@@ -132,24 +141,16 @@ export function RegisterPage() {
             onChange={(e) => {
               setDisplayName(e.target.value)
               if (fieldErrors.displayName) {
-                setFieldErrors(prev => ({ ...prev, displayName: undefined }))
+                setFieldErrors((prev) => ({ ...prev, displayName: undefined }))
               }
             }}
             className={authInputClassName}
             placeholder={t('register.yourName')}
             required
           />
-          {fieldErrors.displayName ? (
-            <p className="mt-1 text-xs text-red-700">{fieldErrors.displayName}</p>
-          ) : null}
-        </div>
-        <div>
-          <label
-            htmlFor="register-email"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
-          >
-            {t('common.email')}
-          </label>
+        </AuthFormField>
+
+        <AuthFormField id="register-email" label={t('common.email')} error={fieldErrors.email}>
           <input
             id="register-email"
             name="email"
@@ -158,25 +159,15 @@ export function RegisterPage() {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value)
-              if (fieldErrors.email) {
-                setFieldErrors(prev => ({ ...prev, email: undefined }))
-              }
+              if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
             }}
             className={authInputClassName}
             placeholder={t('register.emailPlaceholder')}
             required
           />
-          {fieldErrors.email ? (
-            <p className="mt-1 text-xs text-red-700">{fieldErrors.email}</p>
-          ) : null}
-        </div>
-        <div>
-          <label
-            htmlFor="register-phone"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
-          >
-            {t('common.phone')}
-          </label>
+        </AuthFormField>
+
+        <AuthFormField id="register-phone" label={t('common.phone')} error={fieldErrors.phone}>
           <input
             id="register-phone"
             name="phone"
@@ -187,9 +178,7 @@ export function RegisterPage() {
             onChange={(e) => {
               const digitsOnly = e.target.value.replace(/\D/g, '')
               setPhone(digitsOnly)
-              if (fieldErrors.phone) {
-                setFieldErrors(prev => ({ ...prev, phone: undefined }))
-              }
+              if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: undefined }))
             }}
             className={authInputClassName}
             placeholder={t('register.phonePlaceholder')}
@@ -198,17 +187,9 @@ export function RegisterPage() {
             maxLength={32}
             pattern="[0-9]*"
           />
-          {fieldErrors.phone ? (
-            <p className="mt-1 text-xs text-red-700">{fieldErrors.phone}</p>
-          ) : null}
-        </div>
-        <div>
-          <label
-            htmlFor="register-password"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
-          >
-            {t('common.password')}
-          </label>
+        </AuthFormField>
+
+        <AuthFormField id="register-password" label={t('common.password')} error={fieldErrors.password}>
           <input
             id="register-password"
             name="password"
@@ -218,7 +199,7 @@ export function RegisterPage() {
             onChange={(e) => {
               setPassword(e.target.value)
               if (fieldErrors.password || fieldErrors.confirm) {
-                setFieldErrors(prev => ({
+                setFieldErrors((prev) => ({
                   ...prev,
                   password: undefined,
                   confirm: undefined,
@@ -228,20 +209,15 @@ export function RegisterPage() {
             className={authInputClassName}
             placeholder={t('register.passwordPlaceholder')}
             required
-
             minLength={6}
           />
-          {fieldErrors.password ? (
-            <p className="mt-1 text-xs text-red-700">{fieldErrors.password}</p>
-          ) : null}
-        </div>
-        <div>
-          <label
-            htmlFor="register-confirm"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
-          >
-            {t('common.confirmPassword')}
-          </label>
+        </AuthFormField>
+
+        <AuthFormField
+          id="register-confirm"
+          label={t('common.confirmPassword')}
+          error={fieldErrors.confirm}
+        >
           <input
             id="register-confirm"
             name="confirm"
@@ -250,46 +226,24 @@ export function RegisterPage() {
             value={confirm}
             onChange={(e) => {
               setConfirm(e.target.value)
-              if (fieldErrors.confirm) {
-                setFieldErrors(prev => ({ ...prev, confirm: undefined }))
-              }
+              if (fieldErrors.confirm) setFieldErrors((prev) => ({ ...prev, confirm: undefined }))
             }}
             className={authInputClassName}
             placeholder={t('register.repeatPassword')}
             required
           />
-          {fieldErrors.confirm ? (
-            <p className="mt-1 text-xs text-red-700">{fieldErrors.confirm}</p>
-          ) : null}
-        </div>
+        </AuthFormField>
 
         {error ? (
-          <p
-            className="rounded-lg bg-red-50 px-3 py-2 text-left text-sm text-red-800 ring-1 ring-red-200/80 dark:bg-red-950/30 dark:text-red-200 dark:ring-red-900/40"
-            role="alert"
-          >
+          <p className="auth-alert auth-alert-error" role="alert">
             {error}
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-lg bg-gradient-to-b from-amber-500 to-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 disabled:opacity-60 sm:py-3"
-        >
+        <button type="submit" disabled={submitting} className={authPrimaryButtonClassName}>
           {submitting ? t('register.creating') : t('common.createAccount')}
         </button>
       </form>
-
-      <p className="mt-5 text-center text-sm text-stone-500 sm:mt-8">
-        {t('register.alreadyHaveAccount')}{' '}
-        <Link
-          to="/login"
-          className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
-        >
-          {t('common.signIn')}
-        </Link>
-      </p>
     </AuthScreenLayout>
   )
 }
