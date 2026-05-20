@@ -40,14 +40,6 @@ export function Layout() {
       <main className="app-main">
         <Outlet />
       </main>
-      <footer className="app-footer">
-        <p className="app-footer-tagline">{t('landing.footer.tagline')}</p>
-        <nav className="app-footer-nav" aria-label={t('layout.footerNav')}>
-          <Link to="/home">{t('home.wallet')}</Link>
-          <Link to="/historics">{t('home.historics')}</Link>
-          <Link to="/checkout">{t('home.payment')}</Link>
-        </nav>
-      </footer>
     </div>
   )
 }
