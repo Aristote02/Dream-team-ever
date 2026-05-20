@@ -1,44 +1,42 @@
-import { motion } from 'framer-motion'
-import { useLocale } from '../../i18n/LocaleProvider'
-import type { TranslationKey } from '../../i18n/translations'
+import { motion } from "framer-motion";
 
-const MARQUEE_TEXT_KEYS = [
-  'landing.marquee.wallet',
-  'landing.marquee.matricule',
-  'landing.marquee.mpesa',
-  'landing.marquee.bilingual',
-  'landing.marquee.security',
-  'landing.marquee.location',
-] as const satisfies readonly TranslationKey[]
-
-const STAR = '★'
+const items = [
+  "Digital Wallet",
+  "★",
+  "Official Matricule",
+  "★",
+  "M-Pesa",
+  "★",
+  "Orange Money",
+  "★",
+  "Bilingual EN / FR",
+  "★",
+  "Bank-Grade Security",
+  "★",
+  "Kinshasa · 2025",
+  "★",
+];
 
 export function Marquee() {
-  const { t } = useLocale()
-  const items = MARQUEE_TEXT_KEYS.flatMap((key) => [t(key), STAR])
-  const loop = [...items, ...items, ...items]
-
+  const loop = [...items, ...items, ...items];
   return (
-    <section
-      className="l-marquee relative overflow-hidden border-y py-12 backdrop-blur-sm"
-      aria-hidden
-    >
+    <section className="relative py-12 border-y border-border/40 overflow-hidden bg-background/40 backdrop-blur-sm">
       <motion.div
         className="flex gap-12 whitespace-nowrap"
-        animate={{ x: ['0%', '-33.333%'] }}
-        transition={{ duration: 30, ease: 'linear', repeat: Infinity }}
+        animate={{ x: ["0%", "-33.333%"] }}
+        transition={{ duration: 30, ease: "linear", repeat: Infinity }}
       >
-        {loop.map((text, i) => (
+        {loop.map((t, i) => (
           <span
             key={i}
-            className={`font-display text-3xl tracking-tight sm:text-5xl ${
-              text === STAR ? 'gold-text' : 'l-heading opacity-80'
+            className={`font-display text-3xl sm:text-5xl tracking-tight ${
+              t === "★" ? "gold-text" : "text-foreground/80"
             }`}
           >
-            {text}
+            {t}
           </span>
         ))}
       </motion.div>
     </section>
-  )
+  );
 }

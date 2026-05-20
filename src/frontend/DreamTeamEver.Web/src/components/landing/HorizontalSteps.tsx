@@ -1,69 +1,79 @@
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
-import { useLocale } from '../../i18n/LocaleProvider'
-import type { TranslationKey } from '../../i18n/translations'
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 
-const STEPS = [
-  { n: '01', titleKey: 'landing.steps.step1', descKey: 'landing.steps.step1Desc' },
-  { n: '02', titleKey: 'landing.steps.step2', descKey: 'landing.steps.step2Desc' },
-  { n: '03', titleKey: 'landing.steps.step3', descKey: 'landing.steps.step3Desc' },
-  { n: '04', titleKey: 'landing.steps.step4', descKey: 'landing.steps.step4Desc' },
-] as const satisfies readonly {
-  n: string
-  titleKey: TranslationKey
-  descKey: TranslationKey
-}[]
+const steps = [
+  {
+    n: "01",
+    t: "Create your account",
+    d: "Sign up with your name, email and phone in under a minute.",
+  },
+  {
+    n: "02",
+    t: "Pay your registration fee",
+    d: "Use M-Pesa or Orange Money. We confirm the payment in real time.",
+  },
+  {
+    n: "03",
+    t: "Receive your matricule",
+    d: "Your official member ID is issued instantly and stored in your wallet.",
+  },
+  {
+    n: "04",
+    t: "Carry it forever",
+    d: "Access your card, profile and payment history any time, anywhere.",
+  },
+];
 
 export function HorizontalSteps() {
-  const { t } = useLocale()
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ['start start', 'end end'],
-  })
-  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-75%'])
+    offset: ["start start", "end end"],
+  });
+  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-75%"]);
 
   return (
     <section
       ref={ref}
       className="relative h-[400vh]"
-      aria-label={t('landing.steps.ariaLabel')}
+      aria-label="How it works"
     >
-      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
-        <div className="mx-auto mb-10 w-full max-w-7xl px-4 sm:px-6">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] gold-text">
-            {t('landing.steps.label')}
+      <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 mb-10">
+          <p className="text-xs uppercase tracking-[0.3em] gold-text font-bold">
+            How it works
           </p>
-          <h2 className="font-display l-heading mt-3 text-4xl leading-tight sm:text-6xl">
-            {t('landing.steps.titleBefore')}{' '}
-            <span className="gold-text">{t('landing.steps.titleHighlight')}</span>
-            {t('landing.steps.titleEnd')}
+          <h2 className="font-display text-4xl sm:text-6xl mt-3 leading-tight">
+            Four steps to your <span className="gold-text">matricule</span>.
           </h2>
         </div>
         <motion.div style={{ x }} className="flex gap-8 px-[8vw]">
-          {STEPS.map((s) => (
+          {steps.map((s) => (
             <div
               key={s.n}
-              className="glass-card relative h-[55vh] w-[80vw] shrink-0 overflow-hidden rounded-[2rem] p-10 sm:w-[60vw] sm:p-14 lg:w-[44vw]"
+              className="relative shrink-0 w-[80vw] sm:w-[60vw] lg:w-[44vw] h-[55vh] glass-card rounded-[2rem] p-10 sm:p-14 overflow-hidden"
             >
               <div
                 aria-hidden
-                className="absolute -right-32 -top-32 size-[400px] rounded-full opacity-30 blur-3xl"
+                className="absolute -top-32 -right-32 size-[400px] rounded-full blur-3xl opacity-30"
                 style={{
-                  background: 'radial-gradient(circle, var(--amber-glow), transparent 60%)',
+                  background:
+                    "radial-gradient(circle, var(--amber-glow), transparent 60%)",
                 }}
               />
-              <p className="relative font-display text-7xl leading-none gold-text sm:text-9xl">
+              <p className="relative font-display text-7xl sm:text-9xl gold-text leading-none">
                 {s.n}
               </p>
-              <h3 className="relative font-display l-heading mt-8 text-3xl sm:text-4xl">
-                {t(s.titleKey)}
+              <h3 className="relative font-display text-3xl sm:text-4xl mt-8">
+                {s.t}
               </h3>
-              <p className="relative l-body mt-4 max-w-md text-lg">{t(s.descKey)}</p>
+              <p className="relative text-muted-foreground mt-4 text-lg max-w-md">
+                {s.d}
+              </p>
             </div>
           ))}
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

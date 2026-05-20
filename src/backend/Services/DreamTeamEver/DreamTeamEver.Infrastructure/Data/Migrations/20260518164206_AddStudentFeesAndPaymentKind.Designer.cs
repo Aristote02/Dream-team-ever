@@ -14,7 +14,7 @@ namespace DreamTeamEver.Infrastructure.Data.Migrations
     [DbContext(typeof(DreamTeamEverDbContext))]
     [Migration("20260518164206_AddStudentFeesAndPaymentKind")]
     partial class AddStudentFeesAndPaymentKind
-    {
+    { 
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -9,7 +9,7 @@ type AuthFormFieldProps = {
 
 export function AuthFormField({ id, label, error, children }: AuthFormFieldProps) {
   return (
-    <div className="auth-field">
+    <div className="auth-field-wrap">
       <label htmlFor={id} className="auth-label">
         {label}
       </label>

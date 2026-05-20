@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import '../auth/auth-screen.css'
 import { useLocale } from '../i18n/LocaleProvider'
+import { brandNameParts } from './auth/brandNameParts'
 import { BrandLogo } from './BrandLogo'
 import { LocaleToggle } from './LocaleToggle'
 import { ThemeToggle } from './ThemeToggle'
@@ -15,6 +16,7 @@ export type AuthScreenLayoutProps = {
 
 export function AuthScreenLayout({ title, lead, children, footer, demoNote }: AuthScreenLayoutProps) {
   const { t } = useLocale()
+  const brand = brandNameParts(t('brand.name'))
 
   return (
     <div className="auth-screen">
@@ -27,14 +29,13 @@ export function AuthScreenLayout({ title, lead, children, footer, demoNote }: Au
         <div className="auth-screen-card">
           <div className="auth-screen-brand">
             <div className="auth-screen-logo-ring">
-              <BrandLogo className="h-11 w-auto object-contain dark:hidden" alt="" />
-              <BrandLogo className="hidden h-11 w-auto object-contain dark:block" alt="" />
+              <BrandLogo className="auth-screen-logo-img" alt="" />
             </div>
             <p className="auth-brand-title">
-              {t('auth.brandLine1')}{' '}
-              <span className="auth-brand-accent">{t('auth.brandAccent')}</span>
+              {brand.main}{' '}
+              <span className="auth-brand-accent">{brand.accent}</span>
             </p>
-            <p className="auth-screen-tagline">{t('auth.tagline')}</p>
+            <p className="auth-screen-tagline">{t('brand.tagline')}</p>
           </div>
 
           <h2 className="auth-screen-heading">{title}</h2>
