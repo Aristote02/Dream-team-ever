@@ -320,9 +320,12 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 		{
 			_logger.LogError(
 				ex,
-				"Could not connect to the database. Verify PRODUCTION_DATABASE_URL (Supabase direct URI, port 5432). " +
-				"If the log shows an IPv6 address and 'Network is unreachable', deploy the latest migrator (IPv4 fix) or set DOTNET_SYSTEM_NET_DISABLEIPV6=1 in CI.");
-			throw new InvalidOperationException("Database connection failed. Update PRODUCTION_DATABASE_URL to the same Supabase connection string as production.", ex);
+				"Could not connect to the database. Set PRODUCTION_DATABASE_URL to the Supabase Session pooler string from pgAdmin " +
+				"(Host=aws-*.pooler.supabase.com;Port=5432;Username=postgres.<project-ref>;SSL Mode=Require). " +
+				"Do not use db.<ref>.supabase.co — it often fails from GitHub Actions.");
+			throw new InvalidOperationException(
+				"Database connection failed. Use the Supabase Session pooler connection string (same as pgAdmin).",
+				ex);
 		}
 	}
 

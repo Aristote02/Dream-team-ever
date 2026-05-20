@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type "yes" to run EF migrations against PRODUCTION_DATABASE_URL (Supabase direct, port 5432).'
+        description: 'Type "yes" to run EF migrations against PRODUCTION_DATABASE_URL (Supabase Session pooler, port 5432).'
         required: true
         default: 'no'
 
@@ -20,8 +20,6 @@ jobs:
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
-      # Supabase resolves to IPv6; GitHub-hosted runners often cannot reach it (Network is unreachable).
-      DOTNET_SYSTEM_NET_DISABLEIPV6: 1
       ConnectionStrings__DreamTeamEverDbConnectionString: ${{ secrets.PRODUCTION_DATABASE_URL }}
       ASPNETCORE_ENVIRONMENT: Production
 
@@ -31,6 +29,9 @@ jobs:
           if [ -z "$ConnectionStrings__DreamTeamEverDbConnectionString" ]; then
             echo "::error::Secret PRODUCTION_DATABASE_URL is empty."
             exit 1
+          fi
+          if echo "$ConnectionStrings__DreamTeamEverDbConnectionString" | grep -qE 'db\.[a-z0-9]+\.supabase\.co'; then
+            echo "::warning::Secret uses direct host db.*.supabase.co — use Session pooler (aws-*.pooler.supabase.com) like pgAdmin instead."
           fi
 
       - uses: actions/checkout@v4
@@ -46,4 +47,3 @@ jobs:
             --no-launch-profile \
             --project "src/backend/Services/Migrators/DreamTeamEver.MigrationService/DreamTeamEver.MigrationService.csproj" \
             -c Release
-          # Logs include "Migration target: host:port/database" — confirm it is your Supabase host, not Render.
