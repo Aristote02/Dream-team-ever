@@ -265,15 +265,48 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 
 		try
 		{
-			var builder = new NpgsqlConnectionStringBuilder(connectionString);
+			var builder = ParseConnectionString(connectionString);
 			var host = string.IsNullOrWhiteSpace(builder.Host) ? "(no host)" : builder.Host;
 			var database = string.IsNullOrWhiteSpace(builder.Database) ? "(default)" : builder.Database;
 			return $"{host}:{builder.Port}/{database} (SSL={builder.SslMode})";
 		}
-		catch
+		catch (Exception ex)
 		{
-			return "(invalid connection string format)";
+			return $"(invalid connection string: {ex.Message})";
 		}
+	}
+
+	private static NpgsqlConnectionStringBuilder ParseConnectionString(string connectionString)
+	{
+		var trimmed = connectionString.Trim().Trim('"', '\'');
+
+		if (trimmed.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)
+		    || trimmed.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
+		{
+			var uri = new Uri(trimmed);
+			var builder = new NpgsqlConnectionStringBuilder
+			{
+				Host = uri.Host,
+				Port = uri.Port > 0 ? uri.Port : 5432,
+				Database = string.IsNullOrEmpty(uri.AbsolutePath) || uri.AbsolutePath == "/"
+					? "postgres"
+					: Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
+			};
+
+			if (!string.IsNullOrEmpty(uri.UserInfo))
+			{
+				var parts = uri.UserInfo.Split(':', 2);
+				builder.Username = Uri.UnescapeDataString(parts[0]);
+				if (parts.Length > 1)
+				{
+					builder.Password = Uri.UnescapeDataString(parts[1]);
+				}
+			}
+
+			return builder;
+		}
+
+		return new NpgsqlConnectionStringBuilder(trimmed);
 	}
 
 	private async Task EnsureConnectionAsync(DbContext dbContext, CancellationToken cancellationToken)
