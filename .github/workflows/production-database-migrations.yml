@@ -20,6 +20,8 @@ jobs:
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
+      # Supabase resolves to IPv6; GitHub-hosted runners often cannot reach it (Network is unreachable).
+      DOTNET_SYSTEM_NET_DISABLEIPV6: 1
       ConnectionStrings__DreamTeamEverDbConnectionString: ${{ secrets.PRODUCTION_DATABASE_URL }}
       ASPNETCORE_ENVIRONMENT: Production
 

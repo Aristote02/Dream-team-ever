@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using Npgsql;
 
 namespace DreamTeamEver.ServiceDefaults;
@@ -16,12 +18,7 @@ public static class NpgsqlConnectionStringHelper
         }
 
         var builder = Parse(connectionString);
-
-        if (IsRemoteHost(builder.Host) && builder.SslMode == SslMode.Disable)
-        {
-            builder.SslMode = SslMode.Require;
-        }
-
+        ApplyCloudSettings(builder);
         return builder.ConnectionString;
     }
 
@@ -35,6 +32,7 @@ public static class NpgsqlConnectionStringHelper
         try
         {
             var builder = Parse(connectionString);
+            ApplyCloudSettings(builder);
             var host = string.IsNullOrWhiteSpace(builder.Host) ? "(no host)" : builder.Host;
             var database = string.IsNullOrWhiteSpace(builder.Database) ? "(default)" : builder.Database;
             return $"{host}:{builder.Port}/{database} (SSL={builder.SslMode})";
@@ -100,6 +98,48 @@ public static class NpgsqlConnectionStringHelper
         }
 
         return builder;
+    }
+
+    private static void ApplyCloudSettings(NpgsqlConnectionStringBuilder builder)
+    {
+        if (!IsRemoteHost(builder.Host))
+        {
+            return;
+        }
+
+        builder.SslMode = SslMode.Require;
+        PreferIpv4(builder);
+    }
+
+    /// <summary>
+    /// GitHub Actions and other CI hosts often lack IPv6 routing; Supabase DNS returns AAAA first.
+    /// </summary>
+    private static void PreferIpv4(NpgsqlConnectionStringBuilder builder)
+    {
+        if (string.IsNullOrWhiteSpace(builder.Host))
+        {
+            return;
+        }
+
+        if (IPAddress.TryParse(builder.Host, out var literal)
+            && literal.AddressFamily == AddressFamily.InterNetwork)
+        {
+            return;
+        }
+
+        try
+        {
+            var addresses = Dns.GetHostAddresses(builder.Host);
+            var ipv4 = addresses.FirstOrDefault(static a => a.AddressFamily == AddressFamily.InterNetwork);
+            if (ipv4 is not null)
+            {
+                builder.Host = ipv4.ToString();
+            }
+        }
+        catch
+        {
+            // Keep hostname; connection may still work outside CI.
+        }
     }
 
     private static bool IsRemoteHost(string? host)

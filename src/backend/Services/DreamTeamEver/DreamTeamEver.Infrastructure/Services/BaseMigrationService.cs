@@ -320,11 +320,9 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 		{
 			_logger.LogError(
 				ex,
-				"Could not connect to the database. Verify GitHub secret PRODUCTION_DATABASE_URL: use the Supabase " +
-				"direct connection (port 5432, not the transaction pooler on 6543), include SSL, and match the URL used by the live API.");
-			throw new InvalidOperationException(
-				"Database connection failed. Update PRODUCTION_DATABASE_URL to the same Supabase connection string as production.",
-				ex);
+				"Could not connect to the database. Verify PRODUCTION_DATABASE_URL (Supabase direct URI, port 5432). " +
+				"If the log shows an IPv6 address and 'Network is unreachable', deploy the latest migrator (IPv4 fix) or set DOTNET_SYSTEM_NET_DISABLEIPV6=1 in CI.");
+			throw new InvalidOperationException("Database connection failed. Update PRODUCTION_DATABASE_URL to the same Supabase connection string as production.", ex);
 		}
 	}
 
