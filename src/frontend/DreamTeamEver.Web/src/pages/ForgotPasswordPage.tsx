@@ -1,8 +1,16 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { Link, useSearchParams } from "react-router-dom";
-import { forgotPasswordRequest, resetPasswordRequest } from "../api/authApi";
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useMutation } from '@tanstack/react-query'
+import { forgotPasswordRequest, resetPasswordRequest } from '../api/authApi'
+import { AuthFormField } from '../components/auth/AuthFormField'
 import { AuthShell } from '../components/AuthShell'
+import {
+  authInputClassName,
+  authLinkClassName,
+  authPrimaryButtonClassName,
+} from '../components/authInputClass'
+import { useLocale } from '../i18n/LocaleProvider'
+import type { TranslationKey } from '../i18n/translations'
 
 type ResetValues = {
   email: string
@@ -139,39 +147,42 @@ export function ForgotPasswordPage() {
     }
   }
 
-  const title = hasResetLink ? t('forgot.resetPassword') : t('forgot.title')
-  const lead = hasResetLink ? t('forgot.setPasswordFor', { email }) : t('forgot.lead')
+  const subtitle = hasResetLink ? t('forgot.setPasswordFor', { email }) : t('forgot.lead')
 
   return (
-    <AuthShell title={t('auth.forgotTitle')} subtitle={t('forgot.subtitle')}>
-      <div className="space-y-6">
-        {!hasResetLink ? (
-          <form className="space-y-4 sm:space-y-5" onSubmit={onRequestReset} noValidate>
-            <div>
-              <label htmlFor="forgot-email" className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300">
-                {t("common.email")}
-              </label>
-              <input
-                id="forgot-email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value)
-                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
-                }}
-                className="auth-field"
-                placeholder={t("register.emailPlaceholder")}
-                required
-              />
-            </AuthFormField>
+    <AuthShell
+      title={t('auth.forgotTitle')}
+      subtitle={subtitle}
+      footer={
+        <Link to="/login" className={authLinkClassName}>
+          {t('common.backToSignIn')}
+        </Link>
+      }
+    >
+      {!hasResetLink ? (
+        <form className="auth-form" onSubmit={onRequestReset} noValidate>
+          <AuthFormField id="forgot-email" label={t('common.email')} error={fieldErrors.email}>
+            <input
+              id="forgot-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
+              }}
+              className={authInputClassName}
+              placeholder={t('register.emailPlaceholder')}
+              required
+            />
+          </AuthFormField>
 
-            <button type="submit" disabled={forgotMutation.isPending} className={authPrimaryButtonClassName}>
-              {forgotMutation.isPending ? t('forgot.requesting') : t('forgot.requestEmail')}
-            </button>
-          </form>
-        ) : null}
+          <button type="submit" disabled={forgotMutation.isPending} className={authPrimaryButtonClassName}>
+            {forgotMutation.isPending ? t('forgot.requesting') : t('forgot.requestEmail')}
+          </button>
+        </form>
+      ) : null}
 
       {requestDone && !hasResetLink ? (
         <p className="auth-alert auth-alert-success mt-4" role="status">
@@ -179,65 +190,71 @@ export function ForgotPasswordPage() {
         </p>
       ) : null}
 
-      {hasResetLink ? (
-          <form className="auth-form" onSubmit={onResetPassword} noValidate>
-            <AuthFormField
+      {resetDone ? (
+        <p className="auth-alert auth-alert-success mt-4" role="status">
+          {t('forgot.resetSuccess')}
+        </p>
+      ) : null}
+
+      {hasResetLink && !resetDone ? (
+        <form className="auth-form" onSubmit={onResetPassword} noValidate>
+          <AuthFormField
+            id="reset-new-password"
+            label={t('common.newPassword')}
+            error={fieldErrors.newPassword}
+          >
+            <input
               id="reset-new-password"
-              label={t('common.newPassword')}
-              error={fieldErrors.newPassword}
-            >
-              <input
-                id="reset-new-password"
-                name="newPassword"
-                type="password"
-                autoComplete="new-password"
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value)
-                  if (fieldErrors.newPassword) {
-                    setFieldErrors((prev) => ({ ...prev, newPassword: undefined }))
-                  }
-                }}
-                className="auth-field"
-                placeholder={t("forgot.passwordPlaceholder")}
-                required
-              />
-            </AuthFormField>
+              name="newPassword"
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => {
+                setNewPassword(e.target.value)
+                if (fieldErrors.newPassword) {
+                  setFieldErrors((prev) => ({ ...prev, newPassword: undefined }))
+                }
+              }}
+              className={authInputClassName}
+              placeholder={t('forgot.passwordPlaceholder')}
+              required
+            />
+          </AuthFormField>
 
-            <AuthFormField
+          <AuthFormField
+            id="reset-confirm-password"
+            label={t('common.confirmPassword')}
+            error={fieldErrors.confirmPassword}
+          >
+            <input
               id="reset-confirm-password"
-              label={t('common.confirmPassword')}
-              error={fieldErrors.confirmPassword}
-            >
-              <input
-                id="reset-confirm-password"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value)
-                  if (fieldErrors.confirmPassword) {
-                    setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }))
-                  }
-                }}
-                className="auth-field"
-                placeholder={t("forgot.passwordPlaceholder")}
-                required
-              />
-            </AuthFormField>
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+                if (fieldErrors.confirmPassword) {
+                  setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+                }
+              }}
+              className={authInputClassName}
+              placeholder={t('forgot.passwordPlaceholder')}
+              required
+            />
+          </AuthFormField>
 
-            <button type="submit" disabled={resetMutation.isPending} className={authPrimaryButtonClassName}>
-              {resetMutation.isPending ? t('forgot.resetting') : t('forgot.resetPassword')}
-            </button>
-          </form>
-        ) : null}
+          <button type="submit" disabled={resetMutation.isPending} className={authPrimaryButtonClassName}>
+            {resetMutation.isPending ? t('forgot.resetting') : t('forgot.resetPassword')}
+          </button>
+        </form>
+      ) : null}
 
       {requestError ? (
         <p className="auth-alert auth-alert-error mt-4" role="alert">
           {requestError}
         </p>
-      </div>
+      ) : null}
     </AuthShell>
-  );
+  )
 }

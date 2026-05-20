@@ -1,9 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { AuthFormField } from '../components/auth/AuthFormField'
 import { AuthShell } from '../components/AuthShell'
+import {
+  authInputClassName,
+  authLinkClassName,
+  authPrimaryButtonClassName,
+} from '../components/authInputClass'
 import { useAuth } from '../auth/useAuth'
 import { useLocale } from '../i18n/LocaleProvider'
 import type { TranslationKey } from '../i18n/translations'
+
 type RegisterValues = {
   displayName: string
   email: string
@@ -103,24 +110,35 @@ export function RegisterPage() {
     }
   }
 
+  const shellProps = {
+    title: t('auth.signUpTitle'),
+    subtitle: t('register.lead'),
+    footer: (
+      <>
+        {t('register.alreadyHaveAccount')}{' '}
+        <Link to="/login" className={authLinkClassName}>
+          {t('common.signIn')}
+        </Link>
+      </>
+    ),
+  }
+
   if (!authReady) {
     return (
-      <AuthShell title={t('auth.signUpTitle')} subtitle={t('register.subtitle')}>
-        <p className="text-center text-sm text-stone-500">{t('common.loading')}</p>
+      <AuthShell {...shellProps}>
+        <p className="auth-screen-lead">{t('common.loading')}</p>
       </AuthShell>
     )
   }
 
   return (
-    <AuthShell title={t('auth.signUpTitle')} subtitle={t('register.subtitle')}>
-      <form className="space-y-4 sm:space-y-5" onSubmit={onSubmit} noValidate>
-        <div>
-          <label
-            htmlFor="register-name"
-            className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300"
-          >
-            {t('common.fullName')}
-          </label>
+    <AuthShell {...shellProps}>
+      <form className="auth-form" onSubmit={onSubmit} noValidate>
+        <AuthFormField
+          id="register-name"
+          label={t('common.fullName')}
+          error={fieldErrors.displayName}
+        >
           <input
             id="register-name"
             name="displayName"
@@ -133,7 +151,7 @@ export function RegisterPage() {
                 setFieldErrors((prev) => ({ ...prev, displayName: undefined }))
               }
             }}
-            className="auth-field"
+            className={authInputClassName}
             placeholder={t('register.yourName')}
             required
           />
@@ -150,7 +168,7 @@ export function RegisterPage() {
               setEmail(e.target.value)
               if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
             }}
-            className="auth-field"
+            className={authInputClassName}
             placeholder={t('register.emailPlaceholder')}
             required
           />
@@ -169,7 +187,7 @@ export function RegisterPage() {
               setPhone(digitsOnly)
               if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: undefined }))
             }}
-            className="auth-field"
+            className={authInputClassName}
             placeholder={t('register.phonePlaceholder')}
             required
             minLength={6}
@@ -195,7 +213,7 @@ export function RegisterPage() {
                 }))
               }
             }}
-            className="auth-field"
+            className={authInputClassName}
             placeholder={t('register.passwordPlaceholder')}
             required
             minLength={6}
@@ -217,7 +235,7 @@ export function RegisterPage() {
               setConfirm(e.target.value)
               if (fieldErrors.confirm) setFieldErrors((prev) => ({ ...prev, confirm: undefined }))
             }}
-            className="auth-field"
+            className={authInputClassName}
             placeholder={t('register.repeatPassword')}
             required
           />
@@ -233,16 +251,6 @@ export function RegisterPage() {
           {submitting ? t('register.creating') : t('common.createAccount')}
         </button>
       </form>
-
-      <p className="mt-5 text-center text-sm text-stone-500 sm:mt-8">
-        {t('register.alreadyHaveAccount')}{' '}
-        <Link
-          to="/login"
-          className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
-        >
-          {t('common.signIn')}
-        </Link>
-      </p>
     </AuthShell>
   )
 }

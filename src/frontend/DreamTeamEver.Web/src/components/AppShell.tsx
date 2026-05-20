@@ -6,6 +6,7 @@ import { useState, type ReactNode } from "react";
 import { useAuth } from "@/auth/useAuth";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Logo } from "./Logo";
+import { brandNameParts } from "./auth/brandNameParts";
 
 function LangSwitch() {
   const { locale, setLocale } = useLocale();
@@ -54,6 +55,7 @@ function ThemeToggle() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useLocale();
+  const brand = brandNameParts(t("brand.name"));
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [signingOut, setSigningOut] = useState(false);
@@ -85,10 +87,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <Logo size={36} />
             <span className="font-display text-lg sm:text-xl tracking-tight hidden sm:block">
-              {t("brand.name").split(" ").slice(0, 2).join(" ")}{" "}
-              <span className="gold-text font-bold">
-                {t("brand.name").split(" ").slice(2).join(" ")}
-              </span>
+              {brand.main}{" "}
+              <span className="gold-text font-bold">{brand.accent}</span>
             </span>
           </Link>
 
@@ -128,7 +128,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-        className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 flex-1"
+        className="app-main max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 flex-1 min-h-0"
       >
         {children}
       </motion.main>

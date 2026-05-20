@@ -1,9 +1,15 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/useAuth";
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { AuthFormField } from '../components/auth/AuthFormField'
 import { AuthShell } from '../components/AuthShell'
-import { useLocale } from "../i18n/LocaleProvider";
-import type { TranslationKey } from "../i18n/translations";
+import {
+  authInputClassName,
+  authLinkClassName,
+  authPrimaryButtonClassName,
+} from '../components/authInputClass'
+import { useAuth } from '../auth/useAuth'
+import { useLocale } from '../i18n/LocaleProvider'
+import type { TranslationKey } from '../i18n/translations'
 
 type LoginValues = {
   email: string
@@ -76,21 +82,37 @@ export function LoginPage() {
     }
   }
 
+  const shellProps = {
+    title: t('auth.signInTitle'),
+    subtitle: t('login.lead'),
+    footer: (
+      <>
+        {t('login.noAccount')}{' '}
+        <Link to="/register" className={authLinkClassName}>
+          {t('common.createAccount')}
+        </Link>
+      </>
+    ),
+  }
+
   if (!authReady) {
     return (
-      <AuthShell title={t('auth.signInTitle')} subtitle={t('login.subtitle')}>
-        <p className="text-center text-sm text-muted-foreground">{t('common.loading')}</p>
+      <AuthShell {...shellProps}>
+        <p className="auth-screen-lead">{t('common.loading')}</p>
       </AuthShell>
-    );
+    )
   }
 
   return (
-    <AuthShell title={t('auth.signInTitle')} subtitle={t('login.subtitle')}>
-      <form className="space-y-4 sm:space-y-5 text-left" onSubmit={onSubmit} noValidate>
-        <div>
-          <label htmlFor="login-email" className="mb-1.5 block text-left text-sm font-medium text-stone-700 dark:text-stone-300">
-            {t("common.email")}
-          </label>
+    <AuthShell {...shellProps}>
+      <form className="auth-form" onSubmit={onSubmit} noValidate>
+        {registeredNotice ? (
+          <p className="auth-alert auth-alert-success" role="status">
+            {t('login.accountCreated')}
+          </p>
+        ) : null}
+
+        <AuthFormField id="login-email" label={t('common.email')} error={fieldErrors.email}>
           <input
             id="login-email"
             name="email"
@@ -101,7 +123,7 @@ export function LoginPage() {
               setEmail(e.target.value)
               if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
             }}
-            className="auth-field"
+            className={authInputClassName}
             placeholder="you@example.com"
             required
           />
@@ -118,7 +140,7 @@ export function LoginPage() {
               setPassword(e.target.value)
               if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }))
             }}
-            className="auth-field"
+            className={authInputClassName}
             placeholder="••••••••"
             required
           />
@@ -136,20 +158,10 @@ export function LoginPage() {
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="auth-btn-primary disabled:opacity-60"
-        >
-          {submitting ? t("login.signingIn") : t("common.signIn")}
+        <button type="submit" disabled={submitting} className={authPrimaryButtonClassName}>
+          {submitting ? t('login.signingIn') : t('common.signIn')}
         </button>
       </form>
-
-      <p className="mt-5 text-center text-sm text-stone-500 sm:mt-8">
-        <Link to="/register" className="font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline dark:text-amber-300 dark:hover:text-amber-200">
-          {t("common.createAccount")}
-        </Link>
-      </p>
     </AuthShell>
-  );
+  )
 }

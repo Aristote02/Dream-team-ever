@@ -3,6 +3,7 @@ import { useLocale } from "@/i18n/LocaleProvider";
 import { Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/Logo";
+import { brandNameParts } from "@/components/auth/brandNameParts";
 import { useTheme } from "@/theme/ThemeProvider";
 
 function LangSwitch() {
@@ -52,13 +53,16 @@ function ThemeToggle() {
 }
 
 export function LandingNav() {
+  const { t } = useLocale();
+  const brand = brandNameParts(t("brand.name"));
+
   return (
     <nav className="fixed top-0 inset-x-0 z-50 border-b border-border/40 bg-background/60 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-3">
           <Logo size={36} />
           <span className="font-display text-lg sm:text-xl tracking-tight">
-            Dream Team <span className="gold-text font-bold">Ever</span>
+            {brand.main} <span className="gold-text font-bold">{brand.accent}</span>
           </span>
         </Link>
         <div className="flex items-center gap-3">

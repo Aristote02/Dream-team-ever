@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useLocale } from "@/i18n/LocaleProvider";
+import { BrandLogo } from "@/components/BrandLogo";
 
 interface MembershipCardProps {
   memberName: string;
@@ -47,26 +48,8 @@ export function MembershipCard({
                 {memberName}
               </p>
             </div>
-            <div className="size-11 bg-stone-900/15 rounded-xl backdrop-blur grid place-items-center border border-stone-900/20">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="size-6 text-stone-900"
-              >
-                <path
-                  d="M12 2 L20 6 V12 C20 17 16 21 12 22 C8 21 4 17 4 12 V6 Z"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M9 11 L11 13 L15 9"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+            <div className="size-11 overflow-hidden rounded-xl border border-stone-900/20 bg-stone-900/10 backdrop-blur grid place-items-center p-0.5">
+              <BrandLogo className="size-full object-contain" alt="" />
             </div>
           </div>
 
