@@ -256,6 +256,7 @@ export function CheckoutPage() {
             className="field-select"
           >
             <option value="Mpesa">M-Pesa</option>
+            <option value="OrangeMoney">{t('checkout.orangeMoney')}</option>
           </select>
         </label>
 

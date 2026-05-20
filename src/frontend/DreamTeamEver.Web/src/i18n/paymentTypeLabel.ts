@@ -1,9 +1,11 @@
+import type { TranslationKey } from './translations'
 import type { PaymentType } from '../types/payment'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TFn = (key: any) => string
+type TFn = (key: TranslationKey) => string
 
-export function paymentTypeLabel(t: TFn, paymentType: PaymentType): string {
-  if (paymentType === 'Registration') return t('paymentType.registration')
+export function paymentTypeLabel(t: TFn, paymentType: PaymentType | string): string {
+  const normalized =
+    paymentType === 'Registration' || paymentType === '0' ? 'Registration' : 'ScolarFee'
+  if (normalized === 'Registration') return t('paymentType.registration')
   return t('paymentType.scolarFee')
 }
