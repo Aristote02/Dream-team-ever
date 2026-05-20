@@ -1,4 +1,3 @@
-using DreamTeamEver.ServiceDefaults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -31,7 +30,7 @@ public static class DatabaseExtension
         services.AddDbContext<TContext>((serviceProvider, optionsBuilder) =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<TOptions>>().Value;
-                var connectionString = NpgsqlConnectionStringHelper.Normalize(connectionStringSelector(options));
+                var connectionString = connectionStringSelector(options);
 
                 optionsBuilder.UseNpgsql(connectionString, o =>
                 {

@@ -2,7 +2,6 @@ using System.Data;
 using System.Data.Common;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -61,7 +60,6 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 			}
 
 			_logger.LogInformation("Starting migration for provider: {Provider}", dbContext.Database.ProviderName);
-			_logger.LogInformation("Migration target: {Target}", DescribeConnectionTarget(connectionString));
 
 			var strategy = dbContext.Database.CreateExecutionStrategy();
 
@@ -69,8 +67,16 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 			{
 				try
 				{
-					await EnsureConnectionAsync(dbContext, stoppingToken);
-					_logger.LogInformation("Database connection OK. Checking for EF migrations history table...");
+					_logger.LogInformation("Checking if database exists...");
+					var databaseExists = await dbContext.Database.CanConnectAsync(stoppingToken);
+
+					if (!databaseExists)
+					{
+						_logger.LogInformation("Database does not exist. Skipping migration.");
+						return;
+					}
+
+					_logger.LogInformation("Database exists. Checking for EF migrations history table...");
 
 					var migrationsHistoryExists = false;
 					var migrationsCount = 0;
@@ -136,13 +142,6 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 				{
 					_logger.LogError(ex, "An error occurred during migration.");
 					throw;
-				}
-				finally
-				{
-					if (dbContext.Database.GetDbConnection().State == ConnectionState.Open)
-					{
-						await dbContext.Database.CloseConnectionAsync();
-					}
 				}
 			});
 		}
@@ -253,79 +252,6 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 		if (openedHere)
 		{
 			await connection.CloseAsync();
-		}
-	}
-
-	private static string DescribeConnectionTarget(string? connectionString)
-	{
-		if (string.IsNullOrWhiteSpace(connectionString))
-		{
-			return "(not configured)";
-		}
-
-		try
-		{
-			var builder = ParseConnectionString(connectionString);
-			var host = string.IsNullOrWhiteSpace(builder.Host) ? "(no host)" : builder.Host;
-			var database = string.IsNullOrWhiteSpace(builder.Database) ? "(default)" : builder.Database;
-			return $"{host}:{builder.Port}/{database} (SSL={builder.SslMode})";
-		}
-		catch (Exception ex)
-		{
-			return $"(invalid connection string: {ex.Message})";
-		}
-	}
-
-	private static NpgsqlConnectionStringBuilder ParseConnectionString(string connectionString)
-	{
-		var trimmed = connectionString.Trim().Trim('"', '\'');
-
-		if (trimmed.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)
-		    || trimmed.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
-		{
-			var uri = new Uri(trimmed);
-			var builder = new NpgsqlConnectionStringBuilder
-			{
-				Host = uri.Host,
-				Port = uri.Port > 0 ? uri.Port : 5432,
-				Database = string.IsNullOrEmpty(uri.AbsolutePath) || uri.AbsolutePath == "/"
-					? "postgres"
-					: Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
-			};
-
-			if (!string.IsNullOrEmpty(uri.UserInfo))
-			{
-				var parts = uri.UserInfo.Split(':', 2);
-				builder.Username = Uri.UnescapeDataString(parts[0]);
-				if (parts.Length > 1)
-				{
-					builder.Password = Uri.UnescapeDataString(parts[1]);
-				}
-			}
-
-			return builder;
-		}
-
-		return new NpgsqlConnectionStringBuilder(trimmed);
-	}
-
-	private async Task EnsureConnectionAsync(DbContext dbContext, CancellationToken cancellationToken)
-	{
-		try
-		{
-			_logger.LogInformation("Opening database connection...");
-			await dbContext.Database.OpenConnectionAsync(cancellationToken);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(
-				ex,
-				"Could not connect to the database. Set PRODUCTION_DATABASE_URL to the Supabase Session pooler string from pgAdmin " +
-				"(Host=aws-*.pooler.supabase.com;Port=5432;Username=postgres.<project-ref>;SSL Mode=Require). " +
-				"Do not use db.<ref>.supabase.co — it often fails from GitHub Actions.");
-			throw new InvalidOperationException(
-				"Database connection failed. Use the Supabase Session pooler connection string (same as pgAdmin).",
-				ex);
 		}
 	}
 
