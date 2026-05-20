@@ -18,6 +18,7 @@ public static class ApplicationDependencies
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IStudentEnrollmentService, StudentEnrollmentService>();
         services.AddScoped<IMatriculeService, MatriculeService>();
 
         return services;

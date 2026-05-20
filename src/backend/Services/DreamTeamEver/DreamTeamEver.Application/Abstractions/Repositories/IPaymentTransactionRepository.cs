@@ -1,10 +1,13 @@
 using DreamTeamEver.Domain.Entities;
+using DreamTeamEver.Domain.Enums;
 
 namespace DreamTeamEver.Application.Abstractions.Repositories;
 
 public interface IPaymentTransactionRepository : IRepository<PaymentTransaction>
 {
     Task<PaymentTransaction?> FindLatestPendingByMemberAsync(Guid memberId, CancellationToken cancellationToken = default);
+
+    Task<bool> HasCompletedPaymentAsync(Guid memberId, PaymentType paymentType, CancellationToken cancellationToken = default);
 
     Task<PaymentTransaction?> GetByIdWithMemberAsync(Guid id, CancellationToken cancellationToken = default);
 

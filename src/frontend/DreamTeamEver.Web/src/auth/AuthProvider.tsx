@@ -12,6 +12,7 @@ import {
   signOutRequest,
   signUpRequest,
   type AuthResponseDto,
+  type MemberDto,
 } from '../api/authApi'
 import { AuthContext, type AuthUser, type UserRole } from './auth-context'
 
@@ -26,11 +27,18 @@ type PersistedSession = {
 }
 
 type MemberSnapshot = {
+  memberId: string | null
   displayName: string
   phone: string | null
   matriculeCode: string | null
   matriculeIssuedAt: string | null
   createdAt: string | null
+  registrationFeePaid: boolean
+  scolarFeeActive: boolean
+  scolarFeeExpiresAt: string | null
+  nextPaymentType: import('./auth-context').AuthUser['nextPaymentType']
+  nextPaymentAmount: number | null
+  currency: string
 }
 
 function mapApiRole(role: string): UserRole {
@@ -50,31 +58,59 @@ async function resolveMemberSnapshot(
   const trimmed = signupFullName?.trim()
   if (auth.role === 'Admin') {
     return {
+      memberId: auth.memberId,
       displayName: defaultDisplayName(auth.email, true),
       phone: null,
       matriculeCode: null,
       matriculeIssuedAt: null,
       createdAt: null,
+      registrationFeePaid: false,
+      scolarFeeActive: false,
+      scolarFeeExpiresAt: null,
+      nextPaymentType: null,
+      nextPaymentAmount: null,
+      currency: 'USD',
     }
   }
 
   const me = await fetchCurrentMember(accessToken)
   if (me.ok) {
-    return {
-      displayName: trimmed || me.data.fullName,
-      phone: me.data.phone,
-      matriculeCode: me.data.matriculeCode,
-      matriculeIssuedAt: me.data.matriculeIssuedAt,
-      createdAt: me.data.createdAt,
-    }
+    return memberSnapshotFromDto(me.data, trimmed)
   }
 
   return {
+    memberId: auth.memberId,
     displayName: trimmed || defaultDisplayName(auth.email, false),
     phone: auth.phone ?? null,
     matriculeCode: auth.matriculeCode ?? null,
     matriculeIssuedAt: null,
     createdAt: null,
+    registrationFeePaid: false,
+    scolarFeeActive: false,
+    scolarFeeExpiresAt: null,
+    nextPaymentType: 'Registration',
+    nextPaymentAmount: null,
+    currency: 'USD',
+  }
+}
+
+function memberSnapshotFromDto(
+  data: MemberDto,
+  displayNameOverride?: string,
+): MemberSnapshot {
+  return {
+    memberId: data.id,
+    displayName: displayNameOverride?.trim() || data.fullName,
+    phone: data.phone,
+    matriculeCode: data.matriculeCode,
+    matriculeIssuedAt: data.matriculeIssuedAt,
+    createdAt: data.createdAt,
+    registrationFeePaid: data.registrationFeePaid,
+    scolarFeeActive: data.scolarFeeActive,
+    scolarFeeExpiresAt: data.scolarFeeExpiresAt,
+    nextPaymentType: data.nextPaymentType,
+    nextPaymentAmount: data.nextPaymentAmount,
+    currency: data.currency,
   }
 }
 
@@ -84,10 +120,17 @@ function buildUser(auth: AuthResponseDto, member: MemberSnapshot): AuthUser {
     email: auth.email,
     displayName: member.displayName,
     role: mapApiRole(auth.role),
+    memberId: member.memberId ?? auth.memberId,
     phone: member.phone,
     matriculeCode: member.matriculeCode,
     matriculeIssuedAt: member.matriculeIssuedAt,
     createdAt: member.createdAt,
+    registrationFeePaid: member.registrationFeePaid,
+    scolarFeeActive: member.scolarFeeActive,
+    scolarFeeExpiresAt: member.scolarFeeExpiresAt,
+    nextPaymentType: member.nextPaymentType,
+    nextPaymentAmount: member.nextPaymentAmount,
+    currency: member.currency,
   }
 }
 
@@ -114,6 +157,19 @@ function readSession(): PersistedSession | null {
       (data.user.role !== 'admin' && data.user.role !== 'student')
     ) {
       return null
+    }
+    const u = data.user
+    if (u.role === 'student') {
+      data.user = {
+        ...u,
+        memberId: u.memberId ?? null,
+        registrationFeePaid: u.registrationFeePaid ?? false,
+        scolarFeeActive: u.scolarFeeActive ?? false,
+        scolarFeeExpiresAt: u.scolarFeeExpiresAt ?? null,
+        nextPaymentType: u.nextPaymentType ?? 'Registration',
+        nextPaymentAmount: u.nextPaymentAmount ?? null,
+        currency: u.currency ?? 'USD',
+      }
     }
     return data
   } catch {
@@ -239,10 +295,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (result.status === 409) return 'email-taken'
         return 'error'
       }
-      await applyAuthResponse(result.data, { signupFullName: name })
       return 'ok'
     },
-    [applyAuthResponse],
+    [],
   )
 
   const logout = useCallback(async () => {
@@ -308,23 +363,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const me = await fetchCurrentMember(session.accessToken)
     if (!me.ok) return
+    const snap = memberSnapshotFromDto(me.data)
+    const u = session.user
     if (
-      me.data.fullName === session.user.displayName &&
-      me.data.phone === session.user.phone &&
-      me.data.matriculeCode === session.user.matriculeCode &&
-      me.data.matriculeIssuedAt === session.user.matriculeIssuedAt &&
-      me.data.createdAt === session.user.createdAt
+      snap.displayName === u.displayName &&
+      snap.phone === u.phone &&
+      snap.matriculeCode === u.matriculeCode &&
+      snap.matriculeIssuedAt === u.matriculeIssuedAt &&
+      snap.createdAt === u.createdAt &&
+      snap.registrationFeePaid === u.registrationFeePaid &&
+      snap.scolarFeeActive === u.scolarFeeActive &&
+      snap.scolarFeeExpiresAt === u.scolarFeeExpiresAt &&
+      snap.nextPaymentType === u.nextPaymentType &&
+      snap.nextPaymentAmount === u.nextPaymentAmount &&
+      snap.currency === u.currency
     ) {
       return
     }
 
     const nextUser: AuthUser = {
       ...session.user,
-      displayName: me.data.fullName,
-      phone: me.data.phone,
-      matriculeCode: me.data.matriculeCode,
-      matriculeIssuedAt: me.data.matriculeIssuedAt,
-      createdAt: me.data.createdAt,
+      ...snap,
+      id: u.id,
+      email: u.email,
+      role: u.role,
     }
     const next: PersistedSession = { ...session, user: nextUser }
     persistSession(next)

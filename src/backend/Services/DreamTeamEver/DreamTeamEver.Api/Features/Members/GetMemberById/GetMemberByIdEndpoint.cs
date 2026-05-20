@@ -10,8 +10,13 @@ namespace DreamTeamEver.Api.Features.Members.GetMemberById;
 public sealed class GetMemberByIdEndpoint : Endpoint<GetMemberByIdRequest, MemberDto>
 {
     private readonly IMemberService _members;
+    private readonly IStudentEnrollmentService _enrollment;
 
-    public GetMemberByIdEndpoint(IMemberService members) => _members = members;
+    public GetMemberByIdEndpoint(IMemberService members, IStudentEnrollmentService enrollment)
+    {
+        _members = members;
+        _enrollment = enrollment;
+    }
 
     public override void Configure()
     {
@@ -27,9 +32,11 @@ public sealed class GetMemberByIdEndpoint : Endpoint<GetMemberByIdRequest, Membe
             return;
         }
 
+        var status = await _enrollment.GetStatusAsync(member, ct);
+
         if (User.IsInRole(nameof(UserRole.Admin)))
         {
-            await Send.OkAsync(member.ToMemberDto(), ct);
+            await Send.OkAsync(member.ToMemberDto(status), ct);
             return;
         }
 
@@ -42,7 +49,7 @@ public sealed class GetMemberByIdEndpoint : Endpoint<GetMemberByIdRequest, Membe
                 return;
             }
 
-            await Send.OkAsync(member.ToMemberDto(), ct);
+            await Send.OkAsync(member.ToMemberDto(status), ct);
             return;
         }
 

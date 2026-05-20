@@ -12,10 +12,15 @@ public class Member
 
     public string Phone { get; set; } = string.Empty;
 
-    /// <summary>Official identifier issued after a successful registration payment (Mpesa flow).</summary>
+    /// <summary>Official identifier issued on first scolar fee and regenerated on each renewal.</summary>
     public string? MatriculeCode { get; set; }
 
     public DateTimeOffset? MatriculeIssuedAt { get; set; }
+
+    /// <summary>
+    /// UTC timestamp when the current school fee period expires. Extended on each renewal.
+    /// </summary>
+    public DateTimeOffset? ScolarFeeExpiresAt { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 

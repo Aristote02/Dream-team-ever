@@ -13,33 +13,31 @@ public sealed class MatriculeService : IMatriculeService
 
     public async Task<string?> TryIssueMatriculeAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        await using var tx = await _members.BeginTransactionAsync(cancellationToken);
-
         var member = await _members.GetTrackedByIdAsync(memberId, cancellationToken);
 
         if (member is null)
             return null;
 
         if (!string.IsNullOrEmpty(member.MatriculeCode))
-        {
-            await tx.CommitAsync(cancellationToken);
             return member.MatriculeCode;
-        }
 
-        string code;
-        var attempts = 0;
-        do
-        {
-            code = $"DTE-{DateTimeOffset.UtcNow.Year}-{GenerateSuffix()}";
-            attempts++;
-            if (attempts > 32)
-                throw new InvalidOperationException("Could not allocate a unique matricule.");
-        } while (await _members.MatriculeCodeExistsAsync(code, cancellationToken));
-
+        var code = await AllocateUniqueMatriculeCodeAsync(cancellationToken);
         member.MatriculeCode = code;
         member.MatriculeIssuedAt = DateTimeOffset.UtcNow;
-        await _members.SaveChangesAsync(cancellationToken);
-        await tx.CommitAsync(cancellationToken);
+
+        return code;
+    }
+
+    public async Task<string?> RegenerateMatriculeAsync(Guid memberId, CancellationToken cancellationToken = default)
+    {
+        var member = await _members.GetTrackedByIdAsync(memberId, cancellationToken);
+
+        if (member is null)
+            return null;
+
+        var code = await AllocateUniqueMatriculeCodeAsync(cancellationToken);
+        member.MatriculeCode = code;
+        member.MatriculeIssuedAt = DateTimeOffset.UtcNow;
 
         return code;
     }
@@ -48,6 +46,22 @@ public sealed class MatriculeService : IMatriculeService
     {
         var normalized = code.Trim().ToUpperInvariant();
         return _members.FindByMatriculeCodeAsync(normalized, cancellationToken);
+    }
+
+    private async Task<string> AllocateUniqueMatriculeCodeAsync(CancellationToken cancellationToken)
+    {
+        var attempts = 0;
+        do
+        {
+            var code = $"DTE-{DateTimeOffset.UtcNow.Year}-{GenerateSuffix()}";
+            attempts++;
+            if (attempts > 32)
+                throw new InvalidOperationException("Could not allocate a unique matricule.");
+
+            if (!await _members.MatriculeCodeExistsAsync(code, cancellationToken))
+                return code;
+        }
+        while (true);
     }
 
     private static string GenerateSuffix()

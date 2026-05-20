@@ -17,7 +17,7 @@ public sealed class InitiatePaymentEndpoint : Endpoint<InitiatePaymentRequest, P
     {
         Post("/api/payments/initiate");
         Roles(nameof(UserRole.Member));
-        Summary(s => s.Description = "Start a registration payment (must match your member profile). Mpesa integration TBD.");
+        Summary(s => s.Description = "Start the next due fee (registration $10, then scolar $50 / renewal). Mpesa integration TBD.");
     }
 
     public override async Task HandleAsync(InitiatePaymentRequest req, CancellationToken ct)

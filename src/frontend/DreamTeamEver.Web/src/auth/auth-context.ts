@@ -1,4 +1,5 @@
 import { createContext } from 'react'
+import type { PaymentType } from '../types/payment'
 
 export type UserRole = 'admin' | 'student'
 
@@ -7,10 +8,17 @@ export type AuthUser = {
   email: string
   displayName: string
   role: UserRole
+  memberId: string | null
   phone: string | null
   matriculeCode: string | null
   matriculeIssuedAt: string | null
   createdAt: string | null
+  registrationFeePaid: boolean
+  scolarFeeActive: boolean
+  scolarFeeExpiresAt: string | null
+  nextPaymentType: PaymentType | null
+  nextPaymentAmount: number | null
+  currency: string
 }
 
 export type AuthContextValue = {
