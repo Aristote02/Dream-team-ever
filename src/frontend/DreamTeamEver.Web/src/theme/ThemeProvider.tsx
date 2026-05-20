@@ -12,6 +12,8 @@ type Theme = 'light' | 'dark'
 type ThemeContextValue = {
   theme: Theme
   toggleTheme: () => void
+  /** Alias used by the new design components */
+  toggle: () => void
 }
 
 const STORAGE_KEY = 'dreamteam-theme'
@@ -39,10 +41,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, theme)
   }, [theme])
 
+  const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'))
+
   const value = useMemo(
     () => ({
       theme,
-      toggleTheme: () => setTheme(prev => (prev === 'light' ? 'dark' : 'light')),
+      toggleTheme,
+      toggle: toggleTheme,
     }),
     [theme],
   )

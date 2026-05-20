@@ -1,15 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { AuthFormField } from '../components/auth/AuthFormField'
+import { AuthShell } from '../components/AuthShell'
 import {
   authInputClassName,
   authLinkClassName,
   authPrimaryButtonClassName,
 } from '../components/authInputClass'
-import { AuthFormField } from '../components/auth/AuthFormField'
-import { AuthScreenLayout } from '../components/AuthScreenLayout'
 import { useAuth } from '../auth/useAuth'
 import { useLocale } from '../i18n/LocaleProvider'
 import type { TranslationKey } from '../i18n/translations'
+
 type RegisterValues = {
   displayName: string
   email: string
@@ -109,29 +110,35 @@ export function RegisterPage() {
     }
   }
 
+  const shellProps = {
+    title: t('auth.signUpTitle'),
+    subtitle: t('register.lead'),
+    footer: (
+      <>
+        {t('register.alreadyHaveAccount')}{' '}
+        <Link to="/login" className={authLinkClassName}>
+          {t('common.signIn')}
+        </Link>
+      </>
+    ),
+  }
+
   if (!authReady) {
     return (
-      <AuthScreenLayout title={t('register.title')} lead={t('register.lead')}>
+      <AuthShell {...shellProps}>
         <p className="auth-screen-lead">{t('common.loading')}</p>
-      </AuthScreenLayout>
+      </AuthShell>
     )
   }
 
   return (
-    <AuthScreenLayout
-      title={t('register.title')}
-      lead={t('register.lead')}
-      footer={
-        <>
-          {t('register.alreadyHaveAccount')}{' '}
-          <Link to="/login" className={authLinkClassName}>
-            {t('common.signIn')}
-          </Link>
-        </>
-      }
-    >
+    <AuthShell {...shellProps}>
       <form className="auth-form" onSubmit={onSubmit} noValidate>
-        <AuthFormField id="register-name" label={t('common.fullName')} error={fieldErrors.displayName}>
+        <AuthFormField
+          id="register-name"
+          label={t('common.fullName')}
+          error={fieldErrors.displayName}
+        >
           <input
             id="register-name"
             name="displayName"
@@ -244,6 +251,6 @@ export function RegisterPage() {
           {submitting ? t('register.creating') : t('common.createAccount')}
         </button>
       </form>
-    </AuthScreenLayout>
+    </AuthShell>
   )
 }

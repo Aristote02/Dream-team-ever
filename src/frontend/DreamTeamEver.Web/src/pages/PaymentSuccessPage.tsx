@@ -1,30 +1,46 @@
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { fetchCurrentMember } from '../api/authApi'
+import { useAuth } from '../auth/useAuth'
 import { useLocale } from '../i18n/LocaleProvider'
-import './Pages.css'
+import { PaymentAllSet } from '../components/PaymentAllSet'
 
 export function PaymentSuccessPage() {
   const { t } = useLocale()
+  const { getAccessToken } = useAuth()
   const [params] = useSearchParams()
-  const matricule = params.get('matricule')?.trim()
-  const sessionId = params.get('session_id') ?? params.get('sessionId')
+  const matriculeFromUrl = params.get('matricule')?.trim() ?? null
+
+  const memberQuery = useQuery({
+    queryKey: ['member', 'me', 'payment-success'],
+    queryFn: async () => {
+      const token = await getAccessToken()
+      if (!token) throw new Error(t('errors.sessionExpired'))
+      const result = await fetchCurrentMember(token)
+      if (!result.ok) throw new Error(t('view.loadFailed'))
+      return result.data
+    },
+  })
+
+  const member = memberQuery.data
+
+  if (memberQuery.isLoading) {
+    return (
+      <div className="payment-all-set">
+        <p className="payment-all-set-lead">{t('common.loading')}</p>
+      </div>
+    )
+  }
+
+  const matriculeCode = matriculeFromUrl ?? member?.matriculeCode ?? null
+  const isAllSet = member?.scolarFeeActive && !member?.nextPaymentType
 
   return (
-    <div className="page-stack">
-      <h1 className="page-title">{t('payment.successTitle')}</h1>
-      <p className="page-lead">{t('payment.successLead')}</p>
-      {matricule ? (
-        <p className="font-dream-serif text-2xl font-semibold text-amber-700 dark:text-amber-300">
-          {t('payment.matriculeIssued', { code: matricule })}
-        </p>
-      ) : null}
-      {sessionId ? (
-        <p className="page-meta">
-          {t('payment.sessionRef', { id: sessionId })}
-        </p>
-      ) : null}
-      <Link to="/home" className="btn-secondary">
-        {t('common.backToHome')}
-      </Link>
-    </div>
+    <PaymentAllSet
+      title={isAllSet ? undefined : t('payment.successTitle')}
+      lead={isAllSet ? undefined : t('payment.successLead')}
+      matriculeCode={matriculeCode}
+      expiresAt={member?.scolarFeeExpiresAt ?? null}
+    />
   )
 }

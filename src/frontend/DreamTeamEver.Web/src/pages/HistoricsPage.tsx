@@ -6,13 +6,31 @@ import { paymentTypeLabel } from '../i18n/paymentTypeLabel'
 import { useAuth } from '../auth/useAuth'
 import { useLocale } from '../i18n/LocaleProvider'
 import { paymentStatusLabel } from '../i18n/paymentStatusLabel'
+import type { PaymentStatus } from '../types/payment'
+import './historics-page.css'
 
 function formatAmount(amount: number, currency: string, locale: string): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency || 'USD',
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(amount)
+}
+
+function statusClass(status: PaymentStatus): string {
+  switch (status) {
+    case 'Completed':
+      return 'historics-item-status--completed'
+    case 'Pending':
+      return 'historics-item-status--pending'
+    case 'Failed':
+      return 'historics-item-status--failed'
+    case 'Cancelled':
+      return 'historics-item-status--cancelled'
+    default:
+      return ''
+  }
 }
 
 export function HistoricsPage() {
@@ -33,75 +51,66 @@ export function HistoricsPage() {
   const rows = query.data ?? []
   const loading = query.isLoading
   const error = query.error?.message ?? null
-
   const hasRows = useMemo(() => rows.length > 0, [rows.length])
 
   return (
-    <div className="font-dream-sans -mx-6 -mt-2 text-left">
-      <h1 className="font-dream-serif text-xl font-semibold text-stone-900 dark:text-white">
-        {t('historics.title')}
-      </h1>
-      <p className="mt-1 text-sm text-stone-500">
-        {t('historics.lead')}
-      </p>
+    <div className="historics-page">
+      <header className="historics-header">
+        <h1 className="historics-title">{t('historics.title')}</h1>
+        <p className="historics-lead">{t('historics.lead')}</p>
+      </header>
 
-      {loading ? (
-        <p className="mt-6 text-sm text-stone-500">{t('historics.loading')}</p>
-      ) : error ? (
-        <p className="mt-6 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 ring-1 ring-red-200/80 dark:bg-red-950/30 dark:text-red-200 dark:ring-red-900/40">
-          {error}
-        </p>
-      ) : hasRows ? (
-        <ul className="mt-6 space-y-3">
-          {rows.map((row) => (
-            <li
-              key={row.id}
-              className="flex items-center justify-between gap-3 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 p-4 text-white shadow-lg ring-1 ring-amber-400/30"
-            >
-              <div>
-                <p className="font-medium text-white">
-                  {t('historics.paymentLine', {
-                    type: paymentTypeLabel(t, row.paymentType),
-                    method: row.method,
-                  })}
-                </p>
-                <p className="text-xs text-amber-100/90">
-                  {new Date(row.createdAt).toLocaleDateString(locale)}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-semibold text-white">
-                  {formatAmount(row.amount, row.currency, locale)}
-                </p>
-                <p
-                  className={
-                    row.status === 'Pending'
-                      ? 'text-xs font-medium text-amber-100'
-                      : row.status === 'Completed'
-                        ? 'text-xs text-emerald-200'
-                        : 'text-xs text-rose-200'
-                  }
-                >
-                  {paymentStatusLabel(t, row.status)}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-6 text-sm text-stone-500">
-          {t('historics.empty')}
-        </p>
-      )}
+      <section className="historics-panel" aria-labelledby="historics-panel-title">
+        <h2 id="historics-panel-title" className="sr-only">
+          {t('historics.title')}
+        </h2>
 
-      <p className="mt-8 text-center text-sm text-stone-500">
-        <Link
-          to="/home"
-          className="font-medium text-amber-800 underline-offset-4 hover:underline dark:text-amber-300"
-        >
-          {t('common.backToWallet')}
-        </Link>
-      </p>
+        <div className="historics-panel-body">
+          {loading ? (
+            <p className="historics-loading">{t('historics.loading')}</p>
+          ) : error ? (
+            <p className="historics-error" role="alert">
+              {error}
+            </p>
+          ) : hasRows ? (
+            <ul className="historics-list">
+              {rows.map((row) => (
+                <li key={row.id} className="historics-item">
+                  <div className="historics-item-main">
+                    <p className="historics-item-type">
+                      {paymentTypeLabel(t, row.paymentType)}
+                    </p>
+                    <p className="historics-item-meta">
+                      {new Date(row.createdAt).toLocaleDateString(locale, {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}{' '}
+                      · {row.method}
+                    </p>
+                  </div>
+                  <div className="historics-item-side">
+                    <p className="historics-item-amount">
+                      {formatAmount(row.amount, row.currency, locale)}
+                    </p>
+                    <span
+                      className={`historics-item-status ${statusClass(row.status)}`}
+                    >
+                      {paymentStatusLabel(t, row.status)}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="historics-empty">{t('historics.empty')}</p>
+          )}
+        </div>
+
+        <footer className="historics-panel-footer">
+          <Link to="/home">{t('common.backToWallet')}</Link>
+        </footer>
+      </section>
     </div>
   )
 }

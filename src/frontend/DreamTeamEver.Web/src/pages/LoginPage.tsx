@@ -1,13 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/useAuth'
+import { AuthFormField } from '../components/auth/AuthFormField'
+import { AuthShell } from '../components/AuthShell'
 import {
   authInputClassName,
   authLinkClassName,
   authPrimaryButtonClassName,
 } from '../components/authInputClass'
-import { AuthFormField } from '../components/auth/AuthFormField'
-import { AuthScreenLayout } from '../components/AuthScreenLayout'
+import { useAuth } from '../auth/useAuth'
 import { useLocale } from '../i18n/LocaleProvider'
 import type { TranslationKey } from '../i18n/translations'
 
@@ -82,34 +82,36 @@ export function LoginPage() {
     }
   }
 
+  const shellProps = {
+    title: t('auth.signInTitle'),
+    subtitle: t('login.lead'),
+    footer: (
+      <>
+        {t('login.noAccount')}{' '}
+        <Link to="/register" className={authLinkClassName}>
+          {t('common.createAccount')}
+        </Link>
+      </>
+    ),
+  }
+
   if (!authReady) {
     return (
-      <AuthScreenLayout title={t('login.title')} lead={t('login.lead')}>
+      <AuthShell {...shellProps}>
         <p className="auth-screen-lead">{t('common.loading')}</p>
-      </AuthScreenLayout>
+      </AuthShell>
     )
   }
 
   return (
-    <AuthScreenLayout
-      title={t('login.title')}
-      lead={t('login.lead')}
-      footer={
-        <>
-          {t('login.noAccount')}{' '}
-          <Link to="/register" className={authLinkClassName}>
-            {t('common.createAccount')}
-          </Link>
-        </>
-      }
-    >
-      {registeredNotice ? (
-        <p className="auth-alert auth-alert-success mb-4" role="status">
-          {t('login.accountCreated')}
-        </p>
-      ) : null}
-
+    <AuthShell {...shellProps}>
       <form className="auth-form" onSubmit={onSubmit} noValidate>
+        {registeredNotice ? (
+          <p className="auth-alert auth-alert-success" role="status">
+            {t('login.accountCreated')}
+          </p>
+        ) : null}
+
         <AuthFormField id="login-email" label={t('common.email')} error={fieldErrors.email}>
           <input
             id="login-email"
@@ -122,7 +124,7 @@ export function LoginPage() {
               if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
             }}
             className={authInputClassName}
-            placeholder={t('register.emailPlaceholder')}
+            placeholder="you@example.com"
             required
           />
         </AuthFormField>
@@ -139,7 +141,7 @@ export function LoginPage() {
               if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }))
             }}
             className={authInputClassName}
-            placeholder={t('forgot.passwordPlaceholder')}
+            placeholder="••••••••"
             required
           />
         </AuthFormField>
@@ -160,6 +162,6 @@ export function LoginPage() {
           {submitting ? t('login.signingIn') : t('common.signIn')}
         </button>
       </form>
-    </AuthScreenLayout>
+    </AuthShell>
   )
 }
