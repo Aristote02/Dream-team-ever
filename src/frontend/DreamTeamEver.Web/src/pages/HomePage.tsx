@@ -22,7 +22,7 @@ export function HomePage() {
       <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
         {t('home.redirecting')}
       </div>
-    )
+    );
   }
 
   const matricule = user?.matriculeCode?.trim() || undefined
@@ -85,5 +85,5 @@ export function HomePage() {
         ))}
       </div>
     </div>
-  )
+  );
 }

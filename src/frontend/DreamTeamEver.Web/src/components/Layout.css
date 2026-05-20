@@ -1,31 +1,22 @@
 .app-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100svh;
+  min-height: 100%;
   text-align: left;
 }
 
 .app-header {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 3.5rem;
-  padding: 0.875rem 1.5rem;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border);
   gap: 16px;
   background: var(--bg);
   color: var(--text-h);
-  box-sizing: border-box;
 }
 
 .app-brand {
-  display: inline-flex;
-  align-items: center;
-  line-height: 1.25;
   font-weight: 600;
   color: var(--text-h);
   text-decoration: none;
@@ -88,51 +79,4 @@
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
-}
-
-.app-main:has(.home-dashboard) {
-  max-width: none;
-  padding: 0;
-}
-
-.app-footer {
-  flex-shrink: 0;
-  margin-top: auto;
-  padding: 2rem 1.5rem 2.5rem;
-  border-top: 1px solid var(--border);
-  background: var(--bg);
-  text-align: center;
-}
-
-.app-footer-tagline {
-  margin: 0;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.app-footer-nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.25rem 1.75rem;
-  margin-top: 1rem;
-}
-
-.app-footer-nav a {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.app-footer-nav a:hover {
-  color: #d97706;
-}
-
-html.dark .app-footer-nav a:hover {
-  color: #fbbf24;
 }
