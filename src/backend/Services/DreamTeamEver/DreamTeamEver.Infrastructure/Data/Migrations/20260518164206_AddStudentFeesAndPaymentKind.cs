@@ -16,7 +16,7 @@ namespace DreamTeamEver.Infrastructure.Data.Migrations
                 table: "PaymentTransactions",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0); 
 
             migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "ScolarFeeExpiresAt",
