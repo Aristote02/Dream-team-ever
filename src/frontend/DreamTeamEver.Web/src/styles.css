@@ -1,0 +1,305 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #d97706;
+  --primary-foreground: #1c1917;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #1c1917;
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;
+  --accent: #fef3c7;
+  --accent-foreground: #1c1917;
+  --destructive: #dc2626;
+  --destructive-foreground: #fafaf9;
+  --border: #e7e5e4;
+  --input: #e7e5e4;
+  --ring: #f59e0b;
+  --radius: 0.75rem;
+  --surface: rgba(255, 255, 255, 0.88);
+  --surface-2: #f5f5f4;
+  --amber-glow: #f59e0b;
+  --violet-soft: #8b5cf6;
+  --success: #15803d;
+}
+
+html.dark {
+  --background: #0c0a09;
+  --foreground: #fafaf9;
+  --card: #1c1917;
+  --card-foreground: #fafaf9;
+  --popover: #1c1917;
+  --popover-foreground: #fafaf9;
+  --primary: #f59e0b;
+  --primary-foreground: #1c1917;
+  --secondary: #292524;
+  --secondary-foreground: #fafaf9;
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+  --accent: #292524;
+  --accent-foreground: #fafaf9;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafaf9;
+  --border: rgba(120, 113, 108, 0.35);
+  --input: rgba(120, 113, 108, 0.35);
+  --ring: #fbbf24;
+  --surface: rgba(28, 25, 23, 0.72);
+  --surface-2: #292524;
+  --success: #4ade80;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+html,
+body,
+#root {
+  min-height: 100svh;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.mesh-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(245, 158, 11, 0.08), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(217, 119, 6, 0.05), transparent 45%),
+    radial-gradient(ellipse 50% 60% at 70% 80%, rgba(251, 191, 36, 0.06), transparent 50%),
+    linear-gradient(180deg, var(--background) 0%, color-mix(in oklab, var(--background) 92%, #000) 45%, var(--background) 100%);
+}
+
+html.dark .mesh-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(245, 158, 11, 0.12), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(217, 119, 6, 0.08), transparent 45%),
+    radial-gradient(ellipse 50% 60% at 70% 80%, rgba(120, 53, 15, 0.15), transparent 50%),
+    linear-gradient(180deg, #0c0a09 0%, #1c1917 40%, #0c0a09 100%);
+}
+
+/* Landing hero: keep amber mesh tint without an opaque sheet over the video */
+.mesh-bg-over-video {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(245, 158, 11, 0.1), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(217, 119, 6, 0.06), transparent 45%),
+    radial-gradient(ellipse 50% 60% at 70% 80%, rgba(251, 191, 36, 0.08), transparent 50%),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--background) 45%, transparent) 0%,
+      color-mix(in oklab, var(--background) 15%, transparent) 45%,
+      color-mix(in oklab, var(--background) 45%, transparent) 100%
+    );
+}
+
+html.dark .mesh-bg-over-video {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(245, 158, 11, 0.14), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(217, 119, 6, 0.1), transparent 45%),
+    radial-gradient(ellipse 50% 60% at 70% 80%, rgba(120, 53, 15, 0.18), transparent 50%),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--background) 50%, transparent) 0%,
+      color-mix(in oklab, var(--background) 20%, transparent) 45%,
+      color-mix(in oklab, var(--background) 50%, transparent) 100%
+    );
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 45%, #d97706 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #d97706 100%);
+}
+
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+}
+
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  animation: card-shimmer 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes card-shimmer {
+  0%,
+  100% {
+    transform: translateX(-120%);
+  }
+  50% {
+    transform: translateX(120%);
+  }
+}
+
+.text-muted-foreground {
+  color: var(--muted-foreground);
+}
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-surface-2 {
+  background-color: var(--surface-2);
+}
+
+.bg-card {
+  background-color: var(--card);
+}
+
+.border-border {
+  border-color: var(--border);
+}
+
+.text-foreground {
+  color: var(--foreground);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.border-primary {
+  border-color: var(--primary);
+}
+
+.border-input {
+  border-color: var(--input);
+}
+
+.ring-ring {
+  --tw-ring-color: var(--ring);
+}
+
+.hover\:bg-surface-2:hover {
+  background-color: var(--surface-2);
+}
+
+.auth-field {
+  display: flex;
+  height: 2.75rem;
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--input);
+  background: color-mix(in oklab, var(--background) 60%, transparent);
+  padding: 0 0.875rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.auth-field::placeholder {
+  color: var(--muted-foreground);
+}
+
+.auth-field:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 35%, transparent);
+}
+
+.auth-btn-primary {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1c1917;
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #d97706 100%);
+  box-shadow: 0 10px 30px -8px rgba(180, 83, 9, 0.45);
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.auth-btn-primary:hover:not(:disabled) {
+  transform: scale(1.02);
+}
+
+.auth-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

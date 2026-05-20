@@ -2,8 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { forgotPasswordRequest, resetPasswordRequest } from "../api/authApi";
-import { authInputClassName } from "../components/authInputClass";
-import { AuthScreenLayout } from "../components/AuthScreenLayout";
+import { AuthShell } from '../components/AuthShell'
 
 import { useLocale } from "../i18n/LocaleProvider";
 import type { TranslationKey } from "../i18n/translations";
@@ -144,7 +143,7 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <AuthScreenLayout subtitle={t("forgot.subtitle")}>
+    <AuthShell title={t('auth.forgotTitle')} subtitle={t('forgot.subtitle')}>
       <div className="space-y-6">
         {!hasResetLink ? (
           <form className="space-y-4 sm:space-y-5" onSubmit={onRequestReset} noValidate>
@@ -164,7 +163,7 @@ export function ForgotPasswordPage() {
                     setFieldErrors((prev) => ({ ...prev, email: undefined }));
                   }
                 }}
-                className={authInputClassName}
+                className="auth-field"
                 placeholder={t("register.emailPlaceholder")}
                 required
               />
@@ -209,7 +208,7 @@ export function ForgotPasswordPage() {
                     setFieldErrors((prev) => ({ ...prev, newPassword: undefined }));
                   }
                 }}
-                className={authInputClassName}
+                className="auth-field"
                 placeholder={t("forgot.passwordPlaceholder")}
                 required
               />
@@ -232,7 +231,7 @@ export function ForgotPasswordPage() {
                     setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                   }
                 }}
-                className={authInputClassName}
+                className="auth-field"
                 placeholder={t("forgot.passwordPlaceholder")}
                 required
               />
@@ -267,6 +266,6 @@ export function ForgotPasswordPage() {
           </Link>
         </p>
       </div>
-    </AuthScreenLayout>
+    </AuthShell>
   );
 }

@@ -3,6 +3,18 @@ export type Locale = 'en' | 'fr'
 export const translations = {
   en: {
     appName: 'The Dream Team Ever',
+    brand: {
+      name: 'Dream Team Ever',
+      tagline: 'Kinshasa · Estd 2025',
+    },
+    nav: {
+      signOut: 'Sign out',
+      member: 'Member',
+      admin: 'Admin',
+      home: 'Wallet',
+      students: 'Members',
+      adminPayments: 'Payments',
+    },
     common: {
       loading: 'Loading…',
       email: 'Email',
@@ -60,6 +72,11 @@ export const translations = {
       serverUnreachable: 'Could not reach the server. Is the API running?',
       invalidCredentials: 'Invalid email or password.',
     },
+    auth: {
+      signInTitle: 'Welcome back',
+      signUpTitle: 'Join the team',
+      forgotTitle: 'Forgot your password?',
+    },
     login: {
       subtitle: 'Sign in to continue. Kinshasa · Estd 2025',
       forgotPassword: 'Forgot your password?',
@@ -93,17 +110,32 @@ export const translations = {
     },
     home: {
       wallet: 'Wallet',
+      welcome: 'Welcome back',
       redirecting: 'Redirecting to members list…',
       signedInAs: 'Signed in as {{name}}',
       registration: 'Registration',
       digitalPass: 'Digital pass',
+      passSub: 'Your official membership credential.',
+      memberName: 'Member name',
       matricule: 'Matricule',
+      memberSince: 'Member since',
       status: 'Status',
+      statusIssued: 'Active',
+      statusPending: 'Issued after payment',
+      unissued: '—',
       issuedAfterPayment: 'Issued after payment',
       view: 'View',
       students: 'Students',
       payment: 'Payment',
       historics: 'Historics',
+      actions: {
+        view: 'Profile',
+        payment: 'Payment',
+        historics: 'Historics',
+      },
+      recentTitle: 'Recent activity',
+      recentEmpty: 'No recent activity yet.',
+      viewAll: 'View full historics',
     },
     historics: {
       title: 'Payment historics',
@@ -314,6 +346,18 @@ export const translations = {
   },
   fr: {
     appName: 'The Dream Team Ever',
+    brand: {
+      name: 'Dream Team Ever',
+      tagline: 'Kinshasa · Estd 2025',
+    },
+    nav: {
+      signOut: 'Déconnexion',
+      member: 'Membre',
+      admin: 'Admin',
+      home: 'Portefeuille',
+      students: 'Membres',
+      adminPayments: 'Paiements',
+    },
     common: {
       loading: 'Chargement…',
       email: 'E-mail',
@@ -371,6 +415,11 @@ export const translations = {
       serverUnreachable: 'Impossible de joindre le serveur. L\'API est-elle démarrée ?',
       invalidCredentials: 'E-mail ou mot de passe incorrect.',
     },
+    auth: {
+      signInTitle: 'Bon retour',
+      signUpTitle: "Rejoignez l'équipe",
+      forgotTitle: 'Mot de passe oublié ?',
+    },
     login: {
       subtitle: "Connectez-vous pour continuer. Kinshasa · Fondé 2025",
       forgotPassword: 'Mot de passe oublié ?',
@@ -404,17 +453,32 @@ export const translations = {
     },
     home: {
       wallet: 'Portefeuille',
+      welcome: 'Bon retour',
       redirecting: 'Redirection vers la liste des membres…',
       signedInAs: 'Connecté en tant que {{name}}',
       registration: 'Inscription',
       digitalPass: 'Passe numérique',
+      passSub: 'Votre carte de membre officielle.',
+      memberName: 'Nom du membre',
       matricule: 'Matricule',
+      memberSince: 'Membre depuis',
       status: 'Statut',
+      statusIssued: 'Actif',
+      statusPending: 'Émis après paiement',
+      unissued: '—',
       issuedAfterPayment: 'Délivré après paiement',
       view: 'Profil',
       students: 'Étudiants',
       payment: 'Paiement',
       historics: 'Historique',
+      actions: {
+        view: 'Profil',
+        payment: 'Paiement',
+        historics: 'Historique',
+      },
+      recentTitle: 'Activité récente',
+      recentEmpty: 'Aucune activité récente.',
+      viewAll: "Voir tout l'historique",
     },
     historics: {
       title: 'Historique des paiements',

@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { authInputClassName } from '../components/authInputClass'
-import { AuthScreenLayout } from '../components/AuthScreenLayout'
+import { AuthShell } from '../components/AuthShell'
 import { useAuth } from '../auth/useAuth'
 
 import { useLocale } from '../i18n/LocaleProvider'
@@ -104,14 +103,14 @@ export function RegisterPage() {
 
   if (!authReady) {
     return (
-      <AuthScreenLayout subtitle={t('register.subtitle')}>
+      <AuthShell title={t('auth.signUpTitle')} subtitle={t('register.subtitle')}>
         <p className="text-center text-sm text-stone-500">{t('common.loading')}</p>
-      </AuthScreenLayout>
+      </AuthShell>
     )
   }
 
   return (
-    <AuthScreenLayout subtitle={t('register.subtitle')}>
+    <AuthShell title={t('auth.signUpTitle')} subtitle={t('register.subtitle')}>
       <form className="space-y-4 sm:space-y-5" onSubmit={onSubmit} noValidate>
         <div>
           <label
@@ -132,7 +131,7 @@ export function RegisterPage() {
                 setFieldErrors(prev => ({ ...prev, displayName: undefined }))
               }
             }}
-            className={authInputClassName}
+            className="auth-field"
             placeholder={t('register.yourName')}
             required
           />
@@ -159,7 +158,7 @@ export function RegisterPage() {
                 setFieldErrors(prev => ({ ...prev, email: undefined }))
               }
             }}
-            className={authInputClassName}
+            className="auth-field"
             placeholder={t('register.emailPlaceholder')}
             required
           />
@@ -188,7 +187,7 @@ export function RegisterPage() {
                 setFieldErrors(prev => ({ ...prev, phone: undefined }))
               }
             }}
-            className={authInputClassName}
+            className="auth-field"
             placeholder={t('register.phonePlaceholder')}
             required
             minLength={6}
@@ -222,7 +221,7 @@ export function RegisterPage() {
                 }))
               }
             }}
-            className={authInputClassName}
+            className="auth-field"
             placeholder={t('register.passwordPlaceholder')}
             required
 
@@ -251,7 +250,7 @@ export function RegisterPage() {
                 setFieldErrors(prev => ({ ...prev, confirm: undefined }))
               }
             }}
-            className={authInputClassName}
+            className="auth-field"
             placeholder={t('register.repeatPassword')}
             required
           />
@@ -287,6 +286,6 @@ export function RegisterPage() {
           {t('common.signIn')}
         </Link>
       </p>
-    </AuthScreenLayout>
+    </AuthShell>
   )
 }
