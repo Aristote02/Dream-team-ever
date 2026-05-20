@@ -6,6 +6,11 @@ using DreamTeamEver.ServiceDefaults;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.SetupDefaults(args);
+builder.Services.Configure<HostOptions>(options =>
+{
+    // Fail the CI job when migration throws.
+    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.StopHost;
+});
 builder.Services.AddOptionsWithBaseValidationOnStart<ConnectionStringsOptions>(builder.Configuration, x => x.DreamTeamEverDbConnectionString);
 builder.AddDatabase<DreamTeamEverDbContext, ConnectionStringsOptions>(x => x.DreamTeamEverDbConnectionString, "DreamTeamEver.Infrastructure");
 

@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -60,6 +61,7 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 			}
 
 			_logger.LogInformation("Starting migration for provider: {Provider}", dbContext.Database.ProviderName);
+			_logger.LogInformation("Migration target: {Target}", DescribeConnectionTarget(connectionString));
 
 			var strategy = dbContext.Database.CreateExecutionStrategy();
 
@@ -67,16 +69,8 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 			{
 				try
 				{
-					_logger.LogInformation("Checking if database exists...");
-					var databaseExists = await dbContext.Database.CanConnectAsync(stoppingToken);
-
-					if (!databaseExists)
-					{
-						_logger.LogInformation("Database does not exist. Skipping migration.");
-						return;
-					}
-
-					_logger.LogInformation("Database exists. Checking for EF migrations history table...");
+					await EnsureConnectionAsync(dbContext, stoppingToken);
+					_logger.LogInformation("Database connection OK. Checking for EF migrations history table...");
 
 					var migrationsHistoryExists = false;
 					var migrationsCount = 0;
@@ -142,6 +136,13 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 				{
 					_logger.LogError(ex, "An error occurred during migration.");
 					throw;
+				}
+				finally
+				{
+					if (dbContext.Database.GetDbConnection().State == ConnectionState.Open)
+					{
+						await dbContext.Database.CloseConnectionAsync();
+					}
 				}
 			});
 		}
@@ -252,6 +253,45 @@ public abstract class BaseMigrationService<TContext> : BackgroundService where T
 		if (openedHere)
 		{
 			await connection.CloseAsync();
+		}
+	}
+
+	private static string DescribeConnectionTarget(string? connectionString)
+	{
+		if (string.IsNullOrWhiteSpace(connectionString))
+		{
+			return "(not configured)";
+		}
+
+		try
+		{
+			var builder = new NpgsqlConnectionStringBuilder(connectionString);
+			var host = string.IsNullOrWhiteSpace(builder.Host) ? "(no host)" : builder.Host;
+			var database = string.IsNullOrWhiteSpace(builder.Database) ? "(default)" : builder.Database;
+			return $"{host}:{builder.Port}/{database} (SSL={builder.SslMode})";
+		}
+		catch
+		{
+			return "(invalid connection string format)";
+		}
+	}
+
+	private async Task EnsureConnectionAsync(DbContext dbContext, CancellationToken cancellationToken)
+	{
+		try
+		{
+			_logger.LogInformation("Opening database connection...");
+			await dbContext.Database.OpenConnectionAsync(cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(
+				ex,
+				"Could not connect to the database. Verify GitHub secret PRODUCTION_DATABASE_URL: use the Supabase " +
+				"direct connection (port 5432, not the transaction pooler on 6543), include SSL, and match the URL used by the live API.");
+			throw new InvalidOperationException(
+				"Database connection failed. Update PRODUCTION_DATABASE_URL to the same Supabase connection string as production.",
+				ex);
 		}
 	}
 
