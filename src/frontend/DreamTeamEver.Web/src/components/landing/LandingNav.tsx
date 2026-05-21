@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { Moon, Sun } from "lucide-react";
@@ -5,18 +6,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/Logo";
 import { brandNameParts } from "@/components/auth/brandNameParts";
 import { useTheme } from "@/theme/ThemeProvider";
+import "./landing-nav.css";
 
 function LangSwitch() {
   const { locale, setLocale } = useLocale();
-  const current = locale;
   return (
-    <div className="flex bg-surface/70 backdrop-blur rounded-full p-1 border border-border/60">
+    <div className="flex shrink-0 rounded-full border border-border/60 bg-surface/70 p-0.5 backdrop-blur sm:p-1">
       {(["en", "fr"] as const).map((l) => (
         <button
           key={l}
+          type="button"
           onClick={() => setLocale(l)}
-          className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${
-            current === l
+          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors sm:px-3 sm:py-1 sm:text-xs ${
+            locale === l
               ? "gold-gradient text-stone-900"
               : "text-muted-foreground hover:text-foreground"
           }`}
@@ -32,9 +34,10 @@ function ThemeToggle() {
   const { theme, toggle } = useTheme();
   return (
     <button
+      type="button"
       onClick={toggle}
       aria-label="Toggle theme"
-      className="size-9 grid place-items-center rounded-full bg-surface/70 backdrop-blur border border-border/60 text-muted-foreground hover:text-foreground transition-colors"
+      className="grid size-8 shrink-0 place-items-center rounded-full border border-border/60 bg-surface/70 text-muted-foreground backdrop-blur transition-colors hover:text-foreground sm:size-9"
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
@@ -45,7 +48,7 @@ function ThemeToggle() {
           transition={{ duration: 0.2 }}
           className="inline-flex"
         >
-          {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          {theme === "dark" ? <Sun className="size-3.5 sm:size-4" /> : <Moon className="size-3.5 sm:size-4" />}
         </motion.span>
       </AnimatePresence>
     </button>
@@ -54,31 +57,49 @@ function ThemeToggle() {
 
 export function LandingNav() {
   const { t } = useLocale();
-  const brand = brandNameParts(t("brand.name"));
+  const brand = brandNameParts(t("brand.name"), { nonBreakingMain: true });
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 border-b border-border/40 bg-background/60 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-3">
-          <Logo size={36} />
-          <span className="font-display text-lg sm:text-xl tracking-tight">
-            {brand.main} <span className="gold-text font-bold">{brand.accent}</span>
+    <nav
+      className={`landing-nav${scrolled ? " is-scrolled" : ""}`}
+      aria-label="Main navigation"
+    >
+      <div className="landing-nav-inner">
+        <Link
+          to="/"
+          className="landing-nav-brand-link"
+          aria-label={t("brand.name")}
+        >
+          <Logo size={32} />
+          <span className="landing-nav-brand">
+            <span className="landing-nav-brand-main">{brand.main}</span>
+            <span className="landing-nav-brand-accent">{brand.accent}</span>
           </span>
         </Link>
-        <div className="flex items-center gap-3">
+
+        <div className="landing-nav-actions">
           <LangSwitch />
           <ThemeToggle />
           <Link
             to="/login"
-            className="hidden sm:inline-flex text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+            className="hidden px-2 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
-            Sign in
+            {t("landing.nav.signIn")}
           </Link>
           <Link
             to="/register"
-            className="inline-flex items-center gap-2 rounded-full gold-gradient px-4 py-2 text-xs font-bold text-stone-900 shadow-lg shadow-amber-900/30 hover:scale-105 transition-transform"
+            className="inline-flex shrink-0 items-center rounded-full gold-gradient px-3 py-1.5 text-[10px] font-bold text-stone-900 shadow-lg shadow-amber-900/30 transition-transform hover:scale-105 sm:gap-2 sm:px-4 sm:py-2 sm:text-xs"
           >
-            Join now
+            <span className="landing-nav-join-short">{t("landing.nav.joinShort")}</span>
+            <span className="landing-nav-join-full">{t("landing.nav.joinNow")}</span>
           </Link>
         </div>
       </div>

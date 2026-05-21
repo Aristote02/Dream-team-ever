@@ -2,9 +2,11 @@ import { motion, useScroll, useTransform, useMotionValue, useSpring } from "fram
 import { Link } from "react-router-dom";
 import { useRef, type MouseEvent } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { Hero3DScene } from "./Hero3DScene";
 
 export function Hero3D() {
+  const { t } = useLocale();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -33,7 +35,7 @@ export function Hero3D() {
   return (
     <section
       ref={ref}
-      className="relative min-h-screen flex items-center overflow-hidden pt-24"
+      className="relative flex min-h-screen items-center overflow-hidden pt-[calc(4.25rem+env(safe-area-inset-top,0px))] sm:pt-[calc(5rem+env(safe-area-inset-top,0px))]"
     >
       {/* animated mesh orbs */}
       <motion.div
@@ -63,7 +65,7 @@ export function Hero3D() {
             className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold gold-text"
           >
             <Sparkles className="size-3.5" />
-            Member registration · Kinshasa · 2025
+            {t("landing.hero.badge")}
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -71,9 +73,10 @@ export function Hero3D() {
             transition={{ delay: 0.2, duration: 0.7 }}
             className="font-display text-5xl sm:text-6xl lg:text-7xl mt-6 leading-[1.05] tracking-tight"
           >
-            Your <span className="gold-text">digital pass</span>
+            {t("landing.hero.title")}{" "}
+            <span className="gold-text">{t("landing.hero.titleHighlight")}</span>
             <br />
-            to the team.
+            {t("landing.hero.titleEnd")}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -81,8 +84,7 @@ export function Hero3D() {
             transition={{ delay: 0.35 }}
             className="text-muted-foreground text-lg mt-6 max-w-lg"
           >
-            Register, receive your official matricule, and carry your membership in a
-            beautiful digital wallet. Pay by M-Pesa or Orange Money — instantly.
+            {t("landing.hero.lead")}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -94,14 +96,14 @@ export function Hero3D() {
               to="/register"
               className="group inline-flex items-center gap-2 rounded-full gold-gradient px-6 py-3.5 text-sm font-bold text-stone-900 shadow-xl shadow-amber-900/30 hover:scale-105 transition-transform"
             >
-              Create your matricule
+              {t("landing.hero.ctaPrimary")}
               <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               to="/login"
               className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 backdrop-blur px-6 py-3.5 text-sm font-semibold hover:bg-surface-2 transition-colors"
             >
-              I already have an account
+              {t("landing.hero.ctaSecondary")}
             </Link>
           </motion.div>
 
@@ -112,18 +114,18 @@ export function Hero3D() {
             className="mt-12 flex items-center gap-6 text-xs text-muted-foreground"
           >
             <div>
-              <p className="font-display text-2xl gold-text">2k+</p>
-              <p className="uppercase tracking-widest mt-1">Members</p>
+              <p className="font-display text-2xl gold-text">{t("landing.hero.statMembersValue")}</p>
+              <p className="uppercase tracking-widest mt-1">{t("landing.hero.statMembers")}</p>
             </div>
             <div className="h-10 w-px bg-border" />
             <div>
-              <p className="font-display text-2xl gold-text">99.9%</p>
-              <p className="uppercase tracking-widest mt-1">Uptime</p>
+              <p className="font-display text-2xl gold-text">{t("landing.hero.statUptimeValue")}</p>
+              <p className="uppercase tracking-widest mt-1">{t("landing.hero.statUptime")}</p>
             </div>
             <div className="h-10 w-px bg-border" />
             <div>
-              <p className="font-display text-2xl gold-text">24/7</p>
-              <p className="uppercase tracking-widest mt-1">Support</p>
+              <p className="font-display text-2xl gold-text">{t("landing.hero.statSupportValue")}</p>
+              <p className="uppercase tracking-widest mt-1">{t("landing.hero.statSupport")}</p>
             </div>
           </motion.div>
         </div>
@@ -158,9 +160,9 @@ export function Hero3D() {
               <div className="flex items-start justify-between text-stone-900">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] opacity-70">
-                    Membership
+                    {t("landing.hero.cardMembership")}
                   </p>
-                  <p className="font-display text-xl mt-1">Dream Team Ever</p>
+                  <p className="font-display text-xl mt-1">{t("brand.name")}</p>
                 </div>
                 <div className="size-9 rounded-lg bg-stone-900/15 grid place-items-center">
                   <svg viewBox="0 0 24 24" className="size-5 text-stone-900" fill="none">
@@ -174,7 +176,7 @@ export function Hero3D() {
               </div>
               <div className="absolute bottom-6 left-6 right-6 text-stone-900">
                 <p className="text-[10px] uppercase tracking-[0.25em] opacity-70">
-                  Matricule
+                  {t("landing.hero.cardMatricule")}
                 </p>
                 <p className="font-display text-2xl tracking-widest mt-1">
                   DTE · 2025 · 0042
@@ -189,11 +191,11 @@ export function Hero3D() {
               style={{ transform: "translateZ(60px)" }}
             >
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                Status
+                {t("landing.hero.cardStatus")}
               </p>
               <p className="font-bold text-success mt-1 flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-success animate-pulse" />
-                Active
+                {t("landing.hero.cardActive")}
               </p>
             </motion.div>
             <motion.div
@@ -203,9 +205,9 @@ export function Hero3D() {
               style={{ transform: "translateZ(60px)" }}
             >
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                Paid via
+                {t("landing.hero.cardPaid")}
               </p>
-              <p className="font-bold gold-text mt-1">M-Pesa · Orange</p>
+              <p className="font-bold gold-text mt-1">{t("landing.hero.cardPaidMethods")}</p>
             </motion.div>
           </motion.div>
         </div>
@@ -222,7 +224,7 @@ export function Hero3D() {
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          Scroll ↓
+          {t("landing.hero.scroll")} ↓
         </motion.div>
       </motion.div>
     </section>
