@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react'
+﻿import { useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ShieldCheck,
@@ -19,48 +19,10 @@ import { BackgroundVideo } from '../components/landing/BackgroundVideo'
 import { Marquee } from '../components/landing/Marquee'
 import { HorizontalSteps } from '../components/landing/HorizontalSteps'
 import { useAuth } from '../auth/useAuth'
+import { useLocale } from '../i18n/LocaleProvider'
+
 const students = '/landing-students.png';
 const wallet = '/landing-wallet.png';
-
-const features = [
-  {
-    icon: ShieldCheck,
-    title: "Official matricule",
-    desc: "A unique, verifiable member ID issued the moment your payment clears.",
-  },
-  {
-    icon: Smartphone,
-    title: "Digital wallet",
-    desc: "Your membership card, profile and full payment history — always in your pocket.",
-  },
-  {
-    icon: Zap,
-    title: "Instant payments",
-    desc: "Pay via M-Pesa or Orange Money. No queues, no paperwork, no waiting.",
-  },
-  {
-    icon: Globe2,
-    title: "Bilingual by design",
-    desc: "Fully crafted for English and French speakers across DRC and beyond.",
-  },
-  {
-    icon: Lock,
-    title: "Bank-grade security",
-    desc: "Encrypted sessions, hashed credentials, and secure password recovery flows.",
-  },
-  {
-    icon: Users,
-    title: "Built for the team",
-    desc: "Admin tools to manage members, ledgers, and verify matricules in one click.",
-  },
-];
-
-const whyUs = [
-  { n: "01", t: "Built for Kinshasa", d: "Designed around local payment rails and bilingual realities." },
-  { n: "02", t: "Crafted experience", d: "An interface that feels premium on every screen, mobile or desktop." },
-  { n: "03", t: "Truly your data", d: "You own your matricule, your records, and every transaction." },
-  { n: "04", t: "Always available", d: "Your wallet is accessible 24/7, from anywhere with a connection." },
-];
 
 function ParallaxImage({ src, alt }: { src: string; alt: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -84,8 +46,55 @@ function ParallaxImage({ src, alt }: { src: string; alt: string }) {
 }
 
 export function LandingPage() {
+  const { t } = useLocale()
   const { user, authReady } = useAuth()
   const navigate = useNavigate()
+
+  const features = useMemo(
+    () => [
+      {
+        icon: ShieldCheck,
+        title: t('landing.features.matriculeTitle'),
+        desc: t('landing.features.matriculeDesc'),
+      },
+      {
+        icon: Smartphone,
+        title: t('landing.features.walletTitle'),
+        desc: t('landing.features.walletDesc'),
+      },
+      {
+        icon: Zap,
+        title: t('landing.features.paymentsTitle'),
+        desc: t('landing.features.paymentsDesc'),
+      },
+      {
+        icon: Globe2,
+        title: t('landing.features.bilingualTitle'),
+        desc: t('landing.features.bilingualDesc'),
+      },
+      {
+        icon: Lock,
+        title: t('landing.features.securityTitle'),
+        desc: t('landing.features.securityDesc'),
+      },
+      {
+        icon: Users,
+        title: t('landing.features.adminTitle'),
+        desc: t('landing.features.adminDesc'),
+      },
+    ],
+    [t],
+  )
+
+  const whyUs = useMemo(
+    () => [
+      { n: '01', t: t('landing.why.item1Title'), d: t('landing.why.item1Desc') },
+      { n: '02', t: t('landing.why.item2Title'), d: t('landing.why.item2Desc') },
+      { n: '03', t: t('landing.why.item3Title'), d: t('landing.why.item3Desc') },
+      { n: '04', t: t('landing.why.item4Title'), d: t('landing.why.item4Desc') },
+    ],
+    [t],
+  )
 
   useEffect(() => {
     if (authReady && user) {
@@ -113,22 +122,20 @@ export function LandingPage() {
             <div className="lg:col-span-5">
               <Reveal>
                 <p className="text-xs uppercase tracking-[0.3em] gold-text font-bold">
-                  What is Dream Team Ever
+                  {t('landing.what.label')}
                 </p>
                 <h2 className="font-display text-4xl sm:text-5xl mt-4 leading-tight">
-                  More than a registry. A <span className="gold-text">community</span>.
+                  {t('landing.what.title')}{' '}
+                  <span className="gold-text">{t('landing.what.titleHighlight')}</span>
+                  {t('landing.what.titleEnd')}
                 </h2>
-                <p className="text-muted-foreground mt-6 text-lg">
-                  Dream Team Ever turns paper registration into a polished digital experience.
-                  Members pay once, receive their lifetime matricule, and unlock a private
-                  wallet to track everything — profile, payments, status.
-                </p>
+                <p className="text-muted-foreground mt-6 text-lg">{t('landing.what.body')}</p>
                 <div className="mt-8 flex gap-4">
                   <Link
                     to="/register"
                     className="inline-flex items-center gap-2 rounded-full gold-gradient px-5 py-3 text-sm font-bold text-stone-900"
                   >
-                    Start now <ArrowRight className="size-4" />
+                    {t('landing.what.cta')} <ArrowRight className="size-4" />
                   </Link>
                 </div>
               </Reveal>
@@ -137,16 +144,18 @@ export function LandingPage() {
               <Reveal delay={0.15}>
                 <div className="grid grid-cols-5 gap-4 h-[460px]">
                   <div className="col-span-3 row-span-2">
-                    <ParallaxImage src={students} alt="Dream Team Ever members" />
+                    <ParallaxImage src={students} alt={t('landing.what.studentsAlt')} />
                   </div>
                   <div className="col-span-2">
-                    <ParallaxImage src={wallet} alt="Digital membership wallet" />
+                    <ParallaxImage src={wallet} alt={t('landing.what.walletAlt')} />
                   </div>
                   <div className="col-span-2 glass-card rounded-3xl p-5 flex flex-col justify-between">
                     <CreditCard className="size-7 text-primary" />
                     <div>
-                      <p className="font-display text-3xl gold-text">M-Pesa</p>
-                      <p className="text-xs text-muted-foreground mt-1">+ Orange Money</p>
+                      <p className="font-display text-3xl gold-text">{t('landing.marquee.mpesa')}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        + {t('landing.marquee.orange')}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -161,13 +170,13 @@ export function LandingPage() {
             <Reveal>
               <div className="max-w-2xl">
                 <p className="text-xs uppercase tracking-[0.3em] gold-text font-bold">
-                  Features
+                  {t('landing.features.label')}
                 </p>
                 <h2 className="font-display text-4xl sm:text-5xl mt-4 leading-tight">
-                  Everything a modern member needs.
+                  {t('landing.features.title')}
                 </h2>
                 <p className="text-muted-foreground mt-4 text-lg">
-                  Designed for clarity, built for trust.
+                  {t('landing.features.subtitle')}
                 </p>
               </div>
             </Reveal>
@@ -206,15 +215,14 @@ export function LandingPage() {
             <div className="lg:col-span-4">
               <Reveal>
                 <p className="text-xs uppercase tracking-[0.3em] gold-text font-bold">
-                  Why us
+                  {t('landing.why.label')}
                 </p>
                 <h2 className="font-display text-4xl sm:text-5xl mt-4 leading-tight">
-                  Crafted with <span className="gold-text">care</span>, deployed with pride.
+                  {t('landing.why.title')}{' '}
+                  <span className="gold-text">{t('landing.why.titleHighlight')}</span>
+                  {t('landing.why.titleEnd')}
                 </h2>
-                <p className="text-muted-foreground mt-6">
-                  We obsess over the small details — the shimmer of your matricule, the
-                  smoothness of every transition, the trust in every transaction.
-                </p>
+                <p className="text-muted-foreground mt-6">{t('landing.why.body')}</p>
               </Reveal>
             </div>
             <div className="lg:col-span-8 grid sm:grid-cols-2 gap-5">
@@ -250,25 +258,26 @@ export function LandingPage() {
                 />
                 <Sparkles className="size-8 mx-auto gold-text" />
                 <h2 className="relative font-display text-4xl sm:text-6xl mt-6 leading-tight">
-                  Ready to claim your <span className="gold-text">matricule</span>?
+                  {t('landing.cta.title')}{' '}
+                  <span className="gold-text">{t('landing.cta.titleHighlight')}</span>
+                  {t('landing.cta.titleEnd')}
                 </h2>
                 <p className="relative text-muted-foreground mt-6 max-w-xl mx-auto text-lg">
-                  Register in under two minutes. Pay the fee. Walk away with your digital
-                  membership for life.
+                  {t('landing.cta.body')}
                 </p>
                 <div className="relative mt-10 flex flex-wrap justify-center gap-4">
                   <Link
                     to="/register"
                     className="inline-flex items-center gap-2 rounded-full gold-gradient px-7 py-4 text-sm font-bold text-stone-900 shadow-xl shadow-amber-900/40 hover:scale-105 transition-transform"
                   >
-                    Create your account
+                    {t('landing.cta.primary')}
                     <ArrowRight className="size-4" />
                   </Link>
                   <Link
                     to="/login"
                     className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 backdrop-blur px-7 py-4 text-sm font-semibold hover:bg-surface-2 transition-colors"
                   >
-                    Sign in
+                    {t('landing.cta.secondary')}
                   </Link>
                 </div>
               </div>
@@ -279,18 +288,16 @@ export function LandingPage() {
 
       <footer className="border-t border-border/40 py-10 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p className="uppercase tracking-[0.25em]">
-            Dream Team Ever · Kinshasa · Estd 2025
-          </p>
+          <p className="uppercase tracking-[0.25em]">{t('landing.footer.tagline')}</p>
           <div className="flex gap-6">
             <Link to="/login" className="hover:text-foreground transition-colors">
-              Sign in
+              {t('landing.footer.signIn')}
             </Link>
             <Link to="/register" className="hover:text-foreground transition-colors">
-              Register
+              {t('landing.footer.register')}
             </Link>
             <Link to="/forgot-password" className="hover:text-foreground transition-colors">
-              Forgot password
+              {t('landing.footer.forgotPassword')}
             </Link>
           </div>
         </div>

@@ -1,0 +1,473 @@
+/* Shared admin panel styles (members + payments) */
+.admin-page {
+  --adm-heading: #1c1917;
+  --adm-muted: #57534e;
+  --adm-label: #78716c;
+  --adm-panel-bg: rgba(255, 255, 255, 0.92);
+  --adm-panel-border: rgba(214, 211, 209, 0.85);
+  --adm-row-border: rgba(214, 211, 209, 0.55);
+  --adm-input-bg: rgba(245, 245, 244, 0.95);
+  --adm-input-border: rgba(214, 211, 209, 0.9);
+  --adm-accent: #b45309;
+  --adm-matricule: #b45309;
+  --adm-active: #16a34a;
+  --adm-unpaid: #d97706;
+  --adm-admin-bg: rgba(88, 28, 135, 0.18);
+  --adm-admin-text: #7c3aed;
+  --adm-member-bg: rgba(120, 113, 108, 0.15);
+  --adm-member-text: #57534e;
+  --adm-completed-bg: rgba(22, 163, 74, 0.15);
+  --adm-completed-text: #15803d;
+  --adm-pending-bg: rgba(217, 119, 6, 0.15);
+  --adm-pending-text: #b45309;
+  --adm-failed-bg: rgba(127, 29, 29, 0.2);
+  --adm-failed-text: #b91c1c;
+
+  width: 100%;
+  text-align: left;
+  color: var(--adm-heading);
+}
+
+html.dark .admin-page {
+  --adm-heading: #fafaf9;
+  --adm-muted: #a0a0a0;
+  --adm-label: #78716c;
+  --adm-panel-bg: rgba(18, 16, 14, 0.82);
+  --adm-panel-border: rgba(255, 255, 255, 0.08);
+  --adm-row-border: rgba(255, 255, 255, 0.06);
+  --adm-input-bg: rgba(12, 10, 9, 0.75);
+  --adm-input-border: rgba(255, 255, 255, 0.1);
+  --adm-accent: #f59e0b;
+  --adm-matricule: #fbbf24;
+  --adm-active: #34d399;
+  --adm-unpaid: #fbbf24;
+  --adm-admin-bg: rgba(88, 28, 135, 0.35);
+  --adm-admin-text: #c4b5fd;
+  --adm-member-bg: rgba(255, 255, 255, 0.06);
+  --adm-member-text: #a8a29e;
+  --adm-completed-bg: rgba(22, 163, 74, 0.22);
+  --adm-completed-text: #4ade80;
+  --adm-pending-bg: rgba(245, 158, 11, 0.18);
+  --adm-pending-text: #fbbf24;
+  --adm-failed-bg: rgba(127, 29, 29, 0.35);
+  --adm-failed-text: #fca5a5;
+}
+
+.admin-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .admin-page-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.admin-page-title {
+  margin: 0;
+  font-family: var(--font-display), 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--adm-heading);
+}
+
+.admin-page-lead {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  color: var(--adm-muted);
+}
+
+.admin-page-toolbar {
+  display: flex;
+  width: 100%;
+  max-width: 28rem;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.admin-page-search {
+  flex: 1;
+  min-width: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--adm-input-border);
+  background: var(--adm-input-bg);
+  padding: 0.65rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--adm-heading);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-page-search::placeholder {
+  color: var(--adm-muted);
+}
+
+.admin-page-search:focus {
+  border-color: rgba(245, 158, 11, 0.55);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+
+.admin-page-icon-link,
+.admin-page-back-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--adm-panel-border);
+  background: var(--adm-input-bg);
+  color: var(--adm-muted);
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.admin-page-icon-link {
+  height: 2.5rem;
+  width: 2.5rem;
+}
+
+.admin-page-back-btn {
+  padding: 0.55rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-page-icon-link:hover,
+.admin-page-back-btn:hover {
+  color: var(--adm-heading);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.admin-page-alert {
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.8125rem;
+}
+
+.admin-page-alert--success {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  border: 1px solid rgba(22, 163, 74, 0.25);
+}
+
+html.dark .admin-page-alert--success {
+  color: #86efac;
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+.admin-page-alert--error {
+  background: rgba(127, 29, 29, 0.2);
+  color: #b91c1c;
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+html.dark .admin-page-alert--error {
+  color: #fecaca;
+}
+
+.admin-page-panel {
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid var(--adm-panel-border);
+  background: var(--adm-panel-bg);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+}
+
+.admin-page-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-page-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.admin-page-table thead th {
+  padding: 0.85rem 1rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--adm-label);
+  border-bottom: 1px solid var(--adm-row-border);
+}
+
+.admin-page-table tbody td {
+  padding: 0.9rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--adm-row-border);
+  color: var(--adm-muted);
+}
+
+.admin-page-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-page-cell-strong {
+  font-weight: 600;
+  color: var(--adm-heading);
+}
+
+.admin-page-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--adm-muted);
+}
+
+.admin-page-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.admin-page-pagination-info {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--adm-muted);
+}
+
+.admin-page-pagination-btn {
+  border-radius: 9999px;
+  border: 1px solid var(--adm-input-border);
+  background: var(--adm-input-bg);
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--adm-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-page-pagination-btn:hover:not(:disabled) {
+  color: var(--adm-heading);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.admin-page-pagination-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-page-status-badge {
+  display: inline-block;
+  border-radius: 9999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-page-status-badge--completed {
+  background: var(--adm-completed-bg);
+  color: var(--adm-completed-text);
+}
+
+.admin-page-status-badge--pending {
+  background: var(--adm-pending-bg);
+  color: var(--adm-pending-text);
+}
+
+.admin-page-status-badge--failed,
+.admin-page-status-badge--cancelled {
+  background: var(--adm-failed-bg);
+  color: var(--adm-failed-text);
+}
+
+/* Members directory specifics */
+.admin-page-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.admin-page-avatar {
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #1c1917;
+}
+
+.admin-page-name {
+  margin: 0;
+  font-weight: 700;
+  color: var(--adm-heading);
+}
+
+.admin-page-email {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: var(--adm-muted);
+}
+
+.admin-page-matricule {
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--adm-matricule);
+}
+
+.admin-page-matricule--empty {
+  color: var(--adm-muted);
+  font-weight: 400;
+}
+
+.admin-page-badge {
+  display: inline-block;
+  border-radius: 9999px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-page-badge--admin {
+  background: var(--adm-admin-bg);
+  color: var(--adm-admin-text);
+}
+
+.admin-page-badge--member {
+  background: var(--adm-member-bg);
+  color: var(--adm-member-text);
+}
+
+.admin-page-status--active {
+  font-weight: 600;
+  color: var(--adm-active);
+}
+
+.admin-page-status--unpaid {
+  font-weight: 600;
+  color: var(--adm-unpaid);
+}
+
+.admin-page-manage {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--adm-muted);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.admin-page-manage:hover {
+  color: var(--adm-accent);
+}
+
+.admin-page-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.admin-page-modal {
+  width: 100%;
+  max-width: 22rem;
+  border-radius: 1rem;
+  border: 1px solid var(--adm-panel-border);
+  background: var(--adm-panel-bg);
+  padding: 1.25rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+.admin-page-modal-title {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-display), 'Playfair Display', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--adm-heading);
+}
+
+.admin-page-modal-sub {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  color: var(--adm-muted);
+}
+
+.admin-page-modal-field {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.admin-page-modal-field span {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--adm-label);
+}
+
+.admin-page-modal-field select {
+  width: 100%;
+  border-radius: 0.65rem;
+  border: 1px solid var(--adm-input-border);
+  background: var(--adm-input-bg);
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--adm-heading);
+}
+
+.admin-page-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.admin-page-modal-btn {
+  border-radius: 9999px;
+  border: 1px solid var(--adm-input-border);
+  background: transparent;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--adm-muted);
+  cursor: pointer;
+}
+
+.admin-page-modal-btn:hover {
+  color: var(--adm-heading);
+}
+
+.admin-page-modal-btn--danger {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #f87171;
+}
+
+.admin-page-modal-btn--danger:hover {
+  background: rgba(127, 29, 29, 0.2);
+}
