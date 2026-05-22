@@ -30,7 +30,7 @@ public sealed class ConfirmPaymentEndpoint : Endpoint<ConfirmPaymentRequest, Pay
     {
         Post("/api/payments/{Id}/confirm");
         Summary(s =>
-            s.Description = "Simulates a successful provider callback (member owner or Admin; dev / AllowPaymentSimulation). Mpesa integration TBD.");
+            s.Description = "Simulates a successful provider callback (dev / AllowPaymentSimulation only).");
     }
 
     public override async Task HandleAsync(ConfirmPaymentRequest req, CancellationToken ct)

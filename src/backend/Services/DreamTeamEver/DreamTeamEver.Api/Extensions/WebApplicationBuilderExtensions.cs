@@ -9,7 +9,6 @@ using DreamTeamEver.Infrastructure;
 using DreamTeamEver.Infrastructure.Data;
 using DreamTeamEver.ServiceDefaults;
 using FastEndpoints;
-using FastEndpoints.Swagger;
 using FluentValidation;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;

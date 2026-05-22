@@ -20,6 +20,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution items", "solution items", "{136E9F4C-A3F0-4AE2-8046-7C96A8887CE0}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yml = compose.yml
+		M-PESA.md = M-PESA.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A76113B0-BB01-451C-AB7A-532D2BB98AC7}"

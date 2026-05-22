@@ -11,6 +11,8 @@ export type RegistrationConfigDto = {
   scolarFee: number
   scolarFeeValidityDays: number
   currency: string
+  allowPaymentSimulation: boolean
+  mpesaEnabled: boolean
 }
 
 export type InitiatePaymentRequest = {

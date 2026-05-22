@@ -341,10 +341,16 @@ html:not(.dark) .checkout-page {
   border: 1px solid rgba(248, 113, 113, 0.25);
 }
 
-.checkout-loading {
+.checkout-loading,
+.checkout-polling {
   text-align: center;
   font-size: 0.875rem;
   color: var(--co-muted);
+}
+
+.checkout-ref {
+  font-size: 0.75rem;
+  word-break: break-all;
 }
 
 .app-main:has(.checkout-page) {

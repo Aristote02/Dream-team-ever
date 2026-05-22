@@ -86,3 +86,24 @@ export async function confirmPayment(
 
   return { ok: true, data: (await readJson(res)) as PaymentConfirmationDto }
 }
+
+export async function fetchPaymentById(
+  accessToken: string,
+  paymentId: string,
+): Promise<
+  | { ok: true; data: PaymentTransactionDto }
+  | { ok: false; status: number; message?: string }
+> {
+  const res = await fetch(apiUrl(`/api/payments/${paymentId}`), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+
+  if (!res.ok) {
+    return { ok: false, status: res.status, message: errorMessage(await readJson(res)) }
+  }
+
+  return { ok: true, data: (await readJson(res)) as PaymentTransactionDto }
+}
