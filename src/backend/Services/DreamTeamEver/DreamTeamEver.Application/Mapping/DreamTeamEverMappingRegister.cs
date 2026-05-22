@@ -1,4 +1,3 @@
-using System.Threading;
 using DreamTeamEver.Application.Dtos;
 using DreamTeamEver.Domain.Entities;
 using Mapster;
@@ -31,5 +30,6 @@ public sealed class DreamTeamEverMappingRegister : IRegister
             return;
 
         new DreamTeamEverMappingRegister().Register(TypeAdapterConfig.GlobalSettings);
+        MpesaMappingRegister.ApplyGlobal();
     }
 }

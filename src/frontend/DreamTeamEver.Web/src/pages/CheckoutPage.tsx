@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchCurrentMember, fetchMyPayments } from '../api/authApi'
-import { confirmPayment, fetchRegistrationConfig, initiatePayment } from '../api/paymentApi'
+import { confirmPayment, fetchPaymentById, fetchRegistrationConfig, initiatePayment } from '../api/paymentApi'
 import { useAuth } from '../auth/useAuth'
 import { useLocale } from '../i18n/LocaleProvider'
 import { PaymentAllSet } from '../components/PaymentAllSet'
 import { paymentTypeLabel } from '../i18n/paymentTypeLabel'
 import type { PaymentMethod, PaymentTransactionDto } from '../types/payment'
 import './checkout-page.css'
+
+const PAYMENT_POLL_MS = 4000
 
 function formatMoney(amount: number, currency: string, locale: string): string {
   return new Intl.NumberFormat(locale, {
@@ -27,7 +29,6 @@ function formatTotalDue(amount: number, currency: string, locale: string): strin
     maximumFractionDigits: 2,
   }).format(amount)
 
-  // French currency style already includes a symbol/code (e.g. "10,00 $US"); append ISO once.
   if (locale === 'fr' || locale.startsWith('fr-')) {
     return `${amountStr} ${code}`
   }
@@ -95,6 +96,8 @@ export function CheckoutPage() {
   const member = memberQuery.data
   const config = configQuery.data
   const currency = member?.currency ?? config?.currency ?? 'USD'
+  const allowSimulation = config?.allowPaymentSimulation ?? false
+  const mpesaEnabled = config?.mpesaEnabled ?? false
 
   const latestPending = useMemo(() => {
     const rows = paymentsQuery.data ?? []
@@ -113,6 +116,69 @@ export function CheckoutPage() {
     paymentsQuery.error?.message ??
     null
 
+  useEffect(() => {
+    if (!activePending || activePending.status !== 'Pending') {
+      return
+    }
+
+    if (activePending.method === 'Mpesa' && !mpesaEnabled && !allowSimulation) {
+      return
+    }
+
+    let cancelled = false
+
+    const poll = async () => {
+      const token = await getAccessToken()
+      if (!token || cancelled) return
+
+      const result = await fetchPaymentById(token, activePending.id)
+      if (!result.ok || cancelled) return
+
+      if (result.data.status === 'Completed') {
+        await refreshSession()
+        void queryClient.invalidateQueries({ queryKey: ['member'] })
+        const memberResult = await fetchCurrentMember(token)
+        const matricule =
+          memberResult.ok && memberResult.data.matriculeCode
+            ? memberResult.data.matriculeCode
+            : ''
+        navigate(`/payment/success${matricule ? `?matricule=${encodeURIComponent(matricule)}` : ''}`, {
+          replace: true,
+        })
+        return
+      }
+
+      if (result.data.status === 'Failed') {
+        setError(result.data.failureReason ?? t('checkout.paymentFailed'))
+        setPendingTx(null)
+        void queryClient.invalidateQueries({ queryKey: ['member', 'payments'] })
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      void poll()
+    }, PAYMENT_POLL_MS)
+
+    void poll()
+
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [
+    activePending?.id,
+    activePending?.status,
+    activePending?.method,
+    allowSimulation,
+    getAccessToken,
+    member?.matriculeCode,
+    mpesaEnabled,
+    navigate,
+    queryClient,
+    refreshSession,
+    t,
+  ])
+
   async function onInitiate() {
     if (!member?.id) return
     setError(null)
@@ -126,6 +192,10 @@ export function CheckoutPage() {
       const result = await initiatePayment(token, { memberId: member.id, method })
       if (!result.ok) {
         setError(result.message ?? t('checkout.initiateFailed'))
+        return
+      }
+      if (result.data.status === 'Failed') {
+        setError(result.data.failureReason ?? t('checkout.initiateFailed'))
         return
       }
       setPendingTx(result.data)
@@ -180,11 +250,16 @@ export function CheckoutPage() {
   }
 
   if (activePending) {
+    const showSimulation = allowSimulation
+    const showMpesaWait = activePending.method === 'Mpesa' && mpesaEnabled && !showSimulation
+
     return (
       <CheckoutShell>
         <header className="checkout-card-header">
           <h1 className="checkout-card-title">{t('checkout.pendingTitle')}</h1>
-          <p className="checkout-card-lead">{t('checkout.pendingLead')}</p>
+          <p className="checkout-card-lead">
+            {showMpesaWait ? t('checkout.pendingLeadMpesa') : t('checkout.pendingLead')}
+          </p>
         </header>
 
         <div className="checkout-total-row">
@@ -206,19 +281,36 @@ export function CheckoutPage() {
             <span>{t('checkout.method')}</span>
             <strong>{activePending.method === 'Mpesa' ? 'M-Pesa' : t('checkout.orangeMoney')}</strong>
           </div>
+          {activePending.providerReference ? (
+            <div className="checkout-summary-line">
+              <span>{t('checkout.reference')}</span>
+              <strong className="checkout-ref">{activePending.providerReference}</strong>
+            </div>
+          ) : null}
         </div>
+
+        {showMpesaWait ? (
+          <p className="checkout-polling" role="status">
+            {t('checkout.waitingMpesa')}
+          </p>
+        ) : null}
 
         {error ? <p className="checkout-error">{error}</p> : null}
 
-        <button
-          type="button"
-          className="checkout-btn-primary"
-          disabled={loading}
-          onClick={() => void onConfirm(activePending.id)}
-        >
-          {loading ? t('checkout.processing') : t('checkout.confirmSimulation')}
-        </button>
-        <p className="checkout-footnote">{t('checkout.simulationNote')}</p>
+        {showSimulation ? (
+          <>
+            <button
+              type="button"
+              className="checkout-btn-primary"
+              disabled={loading}
+              onClick={() => void onConfirm(activePending.id)}
+            >
+              {loading ? t('checkout.processing') : t('checkout.confirmSimulation')}
+            </button>
+            <p className="checkout-footnote">{t('checkout.simulationNote')}</p>
+          </>
+        ) : null}
+
         <Link to="/home" className="checkout-back">
           ← {t('checkout.back')}
         </Link>
@@ -335,7 +427,11 @@ export function CheckoutPage() {
         </button>
       </form>
 
-      <p className="checkout-footnote">{t('checkout.pushNote')}</p>
+      <p className="checkout-footnote">
+        {mpesaEnabled && method === 'Mpesa'
+          ? t('checkout.pushNoteMpesa')
+          : t('checkout.pushNote')}
+      </p>
       <Link to="/home" className="checkout-back">
         ← {t('checkout.back')}
       </Link>

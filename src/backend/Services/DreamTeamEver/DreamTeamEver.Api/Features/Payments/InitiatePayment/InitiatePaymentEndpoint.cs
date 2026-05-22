@@ -17,7 +17,7 @@ public sealed class InitiatePaymentEndpoint : Endpoint<InitiatePaymentRequest, P
     {
         Post("/api/payments/initiate");
         Roles(nameof(UserRole.Member));
-        Summary(s => s.Description = "Start the next due fee (registration $10, then scolar $50 / renewal). Mpesa integration TBD.");
+        Summary(s => s.Description = "Start the next due fee; M-Pesa C2B when Mpesa:Enabled.");
     }
 
     public override async Task HandleAsync(InitiatePaymentRequest req, CancellationToken ct)
@@ -34,6 +34,13 @@ public sealed class InitiatePaymentEndpoint : Endpoint<InitiatePaymentRequest, P
         if (tx is null)
         {
             await Send.ResultAsync(Results.Json(new { error = ApiErrorMessages.PaymentInitFailed }, statusCode: StatusCodes.Status400BadRequest));
+            
+            return;
+        }
+
+        if (tx.Status == PaymentStatus.Failed)
+        {
+            await Send.ResultAsync(Results.Json(new { error = tx.FailureReason ?? ApiErrorMessages.PaymentInitFailed }, statusCode: StatusCodes.Status400BadRequest));
             
             return;
         }

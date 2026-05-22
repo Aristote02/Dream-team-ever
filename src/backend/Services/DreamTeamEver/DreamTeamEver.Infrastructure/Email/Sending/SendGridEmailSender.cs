@@ -45,17 +45,11 @@ internal sealed class SendGridEmailSender : IEmailSender
                 {
                     var body = await ReadResponseBodyAsync(response, cancellationToken);
                     _logger.LogError("SendGrid returned non-success status. Status: {StatusCode}, Recipient: {RecipientMasked}, Subject: {EmailSubject}, Body: {ResponseBody}",
-                        (int)response.StatusCode,
-                        recipientMasked,
-                        subject,
-                        TruncateForLog(body, 800));
+                        (int)response.StatusCode, recipientMasked, subject, TruncateForLog(body, 800));
                 }
                 else
                 {
-                    _logger.LogError("SendGrid returned non-success status. Status: {StatusCode}, Recipient: {RecipientMasked}, Subject: {EmailSubject}",
-                        (int)response.StatusCode,
-                        recipientMasked,
-                        subject);
+                    _logger.LogError("SendGrid returned non-success status. Status: {StatusCode}, Recipient: {RecipientMasked}, Subject: {EmailSubject}", (int)response.StatusCode, recipientMasked, subject);
                 }
 
                 throw new InvalidOperationException($"SendGrid mail send failed with status {(int)response.StatusCode}.");
@@ -69,10 +63,7 @@ internal sealed class SendGridEmailSender : IEmailSender
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,
-                "Failed to send email via SendGrid. Recipient: {RecipientMasked}, Subject: {EmailSubject}",
-                recipientMasked,
-                subject);
+            _logger.LogError(ex, "Failed to send email via SendGrid. Recipient: {RecipientMasked}, Subject: {EmailSubject}", recipientMasked, subject);
             throw;
         }
     }

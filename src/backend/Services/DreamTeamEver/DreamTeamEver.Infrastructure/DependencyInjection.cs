@@ -7,6 +7,7 @@ using DreamTeamEver.Infrastructure.Email;
 using DreamTeamEver.Infrastructure.Email.Rendering;
 using DreamTeamEver.Infrastructure.Email.Sending;
 using DreamTeamEver.Infrastructure.Email.Services;
+using DreamTeamEver.Infrastructure.Payments.Mpesa;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,7 @@ public static class DependencyInjection
             configuration.GetSection(AdminSeedOptions.SectionName));
 
         services.AddGeoIpLoginLocation(configuration);
+        services.AddMpesaPayments(configuration);
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddSingleton(sp =>
